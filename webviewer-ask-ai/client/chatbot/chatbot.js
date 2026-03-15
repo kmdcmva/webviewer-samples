@@ -1,5 +1,6 @@
 import ChatbotResponse from './response.js';
 import { ChatbotSpinner } from './spinner.js';
+import { getMockChatResponse, isMockingModeEnabled } from '../../__mocks__/webviewer-ask-ai.mock.js';
 
 const spinner = new ChatbotSpinner();
 
@@ -48,6 +49,13 @@ class Chatbot {
   }
 
   async sendMessage(promptLine, message) {
+    // *********************************************
+    // MOCKING MODE: Return mock responses for
+    // testing, without backend
+    if (isMockingModeEnabled())
+      return getMockChatResponse(promptLine);
+    // *********************************************
+
     try {
       // For document-level operations, use increased token limit to preserve messages history
       // Adjust token limits based on prompt type to balance document content and messages history

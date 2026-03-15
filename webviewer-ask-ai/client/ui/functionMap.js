@@ -1,3 +1,5 @@
+import { isMockingModeEnabled } from '../../__mocks__/webviewer-ask-ai.mock.js';
+
 const functionMap = {
   // Render the WebViewer chat panel
   'askWebSDKPanelRender': () => {
@@ -11,6 +13,13 @@ const functionMap = {
       console.error('Failed to load assistant messages from config.');
       return;
     }
+
+    // **********************************
+    // MOCKING MODE: Clear initial assistant
+    // messages for testing, without backend
+    if (isMockingModeEnabled())
+      configData.ASSISTANT_MESSAGES = [];
+    // **********************************
 
     // The main container div
     askWebSDKMainDiv = document.createElement('div');

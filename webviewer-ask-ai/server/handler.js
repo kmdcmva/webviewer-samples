@@ -2,6 +2,7 @@ import { HumanMessage, SystemMessage as AssistantMessage } from '@langchain/core
 import dotenv from 'dotenv';
 import LLMManager from './llmManager.js';
 import logger from './logger.js';
+import { isMockingModeEnabled } from '../__mocks__/webviewer-ask-ai.mock.js';
 import { readFileSync } from 'fs';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
@@ -20,6 +21,14 @@ const GUARD_RAILS = configData.GUARD_RAILS;
 const llmManager = new LLMManager();
 
 export default (app) => {
+
+  // *********************************************
+  // MOCKING MODE: No need to initialize endpoints
+  // if mocking mode is used, since client will
+  // use mock responses
+  if (isMockingModeEnabled())
+    return;
+  // *********************************************
 
   // Initialize LangChain on startup
   llmManager.initialize();
@@ -91,7 +100,7 @@ export default (app) => {
 
             // Update llm settings
             // Reduced maxTokens to prevent truncation and repetition
-            llmManager.tuneSettings({maxTokens: 120});
+            llmManager.tuneSettings({ maxTokens: 120 });
 
             // Execute keyword extraction for this chunk
             const chunkContent = await llmManager.executeMessages(chunkMessages);
@@ -106,7 +115,7 @@ export default (app) => {
           ];
 
           // Update llm settings
-          llmManager.tuneSettings({maxTokens: 200});
+          llmManager.tuneSettings({ maxTokens: 200 });
 
           // Execute consolidation messages to get final keywords
           finalContent = await llmManager.executeMessages(consolidationMessages);
@@ -124,7 +133,7 @@ export default (app) => {
           ];
 
           // Update llm settings
-          llmManager.tuneSettings({maxTokens: guardRail.LLM.Settings.maxTokens});
+          llmManager.tuneSettings({ maxTokens: guardRail.LLM.Settings.maxTokens });
 
           // Execute messages with only the first chunk
           finalContent = await llmManager.executeMessages(messages);
@@ -145,7 +154,7 @@ export default (app) => {
         await logger.logContextualQuestionDebug(promptType, message, guardRail, history, llmManager.getTokenCount.bind(llmManager));
 
         // Update llm settings
-        llmManager.tuneSettings({maxTokens: guardRail.LLM.Settings.maxTokens});
+        llmManager.tuneSettings({ maxTokens: guardRail.LLM.Settings.maxTokens });
 
         // Execute messages normally
         finalContent = await llmManager.executeMessages(messages);
