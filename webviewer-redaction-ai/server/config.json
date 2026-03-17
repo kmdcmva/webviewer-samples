@@ -1,0 +1,52 @@
+{
+  "guardRail": {
+    "assistantPrompt": "From the given text, extract the following information: PIICLASSIFICATIONSPLACEHOLDER and apply the following rules: ",
+    "piiClassifications": [
+      {
+        "classification": "personal",
+        "details": ["person names"]
+      },
+      {
+        "classification": "contact",
+        "details": [
+          "phone numbers (landline, mobile, fax)",
+          "email addresses",
+          "physical addresses (street, city, state, zip code)",
+          "mailing addresses (P.O. Box)"
+        ]
+      },
+      {
+        "classification": "financial",
+        "details": [
+          "credit card numbers",
+          "bank account numbers",
+          "IBAN codes",
+          "SWIFT/BIC codes"
+        ]
+      },
+      {
+        "classification": "governmental",
+        "details": [
+          "national ID numbers",
+          "passport numbers",
+          "social security numbers",
+          "driver's license numbers",
+          "tax ID numbers"
+        ]
+      }
+    ],
+    "rulesSet": [
+      "1. Response must be in form of list.",
+      "2. Response must not be numbered using numbers, bullet points, hyphens/dashes.",
+      "3. Response must not be labeled (e.g., 'Name: Linda Nelson', 'Phone: 291 555 5555', 'Address: 18th Floor, 2822 Glenoaks St.', etc.).",
+      "4. Response must not contain duplicates.",
+      "5. If a punctuated address or an address appears on separate lines in the original text is recognized, list each as its own line in the same order they appear.",
+      "6. If P.O Box, IBAN, SWIFT/BIC, National ID, passport, social security, driver's license, and tax ID numbers include whitespace characters, returns nothing.",
+      "7. If no finding is recognized, returns nothing.",
+      "8. If single word is recognized, returns nothing.",
+      "9. If multiple findings are recognized, and appear on the same line or punctuated in the original text, they must be listed separately.",
+      "10. If a field name finding is recognized (e.g., Social Security Number or Social Security No.), returns nothing.",
+      "11. Legal entity names that look like person names (e.g., Peady, Eff, & Wright Exporting; Ace Deekay Shipping; Kroft & Partners) should be excluded from the response, but any associated information (e.g., phone numbers, addresses, person names, etc.) should still be extracted and listed."
+    ]
+  }
+}

@@ -1,0 +1,53 @@
+import DocumentManager from './document/manager.js';
+import functionMap from './ui/functionMap.js';
+const customUIFile = './ui/custom.json';
+
+WebViewer({
+  path: 'lib',
+  initialDoc: files[0],
+  fullAPI: true,
+  loadAsPDF: true,
+  enableFilePicker: true, // Enable file picker to open files. In WebViewer -> menu icon -> Open File
+  enableRedaction: true,
+  licenseKey: 'YOUR_LICENSE_KEY',
+}, document.getElementById('viewer')
+).then(instance => {
+  const { documentViewer } = instance.Core;
+  const { UI } = instance;
+
+  // Import modular components configuration from JSON file
+  importModularComponents();
+
+  documentViewer.addEventListener('documentLoaded', async () => {
+    // Switch to the Redact toolbar group
+    UI.setToolbarGroup('toolbarGroup-Redact');
+
+    UI.setLayoutMode(UI.LayoutMode.FacingContinuous); // or Facing, Cover, CoverFacing
+    UI.setFitMode(UI.FitMode.FitPage);                // optional: fit whole spreads
+
+    // Load document manager
+    loadedDocument = new DocumentManager(documentViewer);
+    await loadedDocument.initialize().then(() => {
+    }).catch(error => {
+      console.error('Failed to initialize document manager:', error);
+      return;
+    });
+  });
+});
+
+// Import modular components configuration from JSON file
+const importModularComponents = async () => {
+  try {
+    const response = await fetch(customUIFile);
+    if (!response.ok)
+      throw new Error(`Failed to import modular components configuration: ${response.statusText}`);
+
+    let customUIConfig = JSON.stringify(await response.json());
+    customUIConfig = customUIConfig.replaceAll("{{APP_SITE_NAME}}", document.title);
+
+    WebViewer.getInstance().UI.importModularComponents(JSON.parse(customUIConfig), functionMap);
+
+  } catch (error) {
+    throw new Error(`Failed to import modular components configuration: ${error.message}`);
+  }
+};
