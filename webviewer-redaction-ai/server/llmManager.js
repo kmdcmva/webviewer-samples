@@ -70,7 +70,7 @@ class LLMManager {
       return null;
     }
 
-    return parsedResponse;
+    return parsedResponse.content;
   }
 }
 

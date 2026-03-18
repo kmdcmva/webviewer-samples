@@ -2,6 +2,7 @@ import { HumanMessage, SystemMessage as AssistantMessage } from '@langchain/core
 import LLMManager from './llmManager.js';
 import dotenv from 'dotenv';
 import { readFileSync } from 'fs';
+import { randomBytes } from 'crypto';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
 import { isMockingModeEnabled } from '../__mocks__/webviewer-redaction-ai.mock.js';
@@ -59,7 +60,7 @@ export default (app) => {
       }
 
       // Generate unique document ID
-      const documentId = `doc_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+      const documentId = `doc_${Date.now()}_${randomBytes(9).toString('base64url')}`;
 
       // Store the document text
       documentStore.set(documentId, {
@@ -114,10 +115,8 @@ export default (app) => {
         });
 
       // AI processing with LangChain for PII detection
-      let humanMessage = new HumanMessage(document.text);
-      let aiResult = await llmManager.executeMessages([assistantMessage, humanMessage]);
-      aiResult = JSON.stringify(aiResult, null, 2);
-      aiResult = JSON.parse(aiResult);
+      const humanMessage = new HumanMessage(document.text);
+      const aiResult = await llmManager.executeMessages([assistantMessage, humanMessage]);
 
       // Store analysis results
       const analysisData = {
@@ -126,7 +125,7 @@ export default (app) => {
         documentId: documentId,
         aiProcessing: true,
         analyzedAt: new Date().toISOString(),
-        analysis: aiResult.kwargs.content
+        analysis: aiResult
       };
 
       analysisStore.set(documentId, analysisData);

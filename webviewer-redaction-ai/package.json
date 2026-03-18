@@ -6,12 +6,12 @@
   "main": "index.js",
   "scripts": {
     "postinstall": "node tools/copy-webviewer-files.js",
-    "start": "node server/serve.js",
+    "start": "node server/server.js",
     "start:mock": "cross-env NODE_ENV=mocking npm start",
     "playwright": "playwright test",
     "playwright:ui": "playwright test --ui",
-    "test:e2e": "npm-run-all --parallel start:mock playwright",
-    "test:e2e:ui": "npm-run-all --parallel start:mock playwright:ui"
+    "test:e2e": "run-p --race start:mock playwright",
+    "test:e2e:ui": "run-p --race start:mock playwright:ui"
   },
   "author": "Apryse Systems Inc.",
   "devDependencies": {

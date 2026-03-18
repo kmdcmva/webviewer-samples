@@ -9,10 +9,6 @@ test('Validate AI PII redaction tool button exists in DOM', async ({ page }) => 
   // Go to the app page (adjust the URL if needed)
   await page.goto('/client/index.html');
 
-  // Wait for 2 seconds to load the
-  // WebViewer with UI customization
-  await page.waitForTimeout(2000);
-
   // Locate the AIPIIRedactionToolButton button in ModularHeader
   let component = page.locator('button[data-element="AIPIIRedactionToolButton"]');
   await expect(component).toHaveCount(1);
@@ -27,21 +23,17 @@ test('Perform AI PII redaction', async ({ page }) => {
   const pIIBtn = page.locator('button[data-element="AIPIIRedactionToolButton"]');
   await pIIBtn.click();
 
-  // Wait for 7 seconds before finishing
-  // the test to capture the AI response
-  await page.waitForTimeout(7000);
-
   // Click Redact All once AI marks are available.
   const redactAllBtn = page.locator('button[data-element="redactAllMarkedButton"]');
   await expect(redactAllBtn).toBeVisible();
   await redactAllBtn.click();
 
-  // Click Redact All once AI marks are available.
+  // Confirm redaction once the warning modal's apply button is available.
   const applyRedactionBtn = page.locator('button[data-element="WarningModalSignButton"]');
   await expect(applyRedactionBtn).toBeVisible();
   await applyRedactionBtn.click();
 
-  // Wait for 4 seconds before finishing
-  // the test to capture the AI response
-  await page.waitForTimeout(4000);
+  // Wait deterministically for the warning/apply button to disappear,
+  // indicating that the redaction confirmation flow has completed.
+  await expect(applyRedactionBtn).toBeHidden();
 });

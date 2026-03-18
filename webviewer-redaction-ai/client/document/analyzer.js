@@ -17,7 +17,7 @@ const sendTextToServer = async () => {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        documentText: loadedDocument.text,
+        documentText: globalThis.loadedDocument?.text ?? '',
         timestamp: new Date().toISOString()
       }),
     });
@@ -108,7 +108,7 @@ const analyzeDocumentForPII = async () => {
     await analyzeDocument(documentId);
 
     // Step 3: Get analysis result from server
-    aiAnalysisResult = await getAnalysisResult(documentId);
+    globalThis.aiAnalysisResult = await getAnalysisResult(documentId);
   } catch (error) {
     console.error('Failed to analyze document:', error);
   }

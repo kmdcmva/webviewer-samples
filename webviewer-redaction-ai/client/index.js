@@ -4,7 +4,7 @@ const customUIFile = './ui/custom.json';
 
 WebViewer({
   path: 'lib',
-  initialDoc: files[0],
+  initialDoc: globalThis.files[0],
   fullAPI: true,
   loadAsPDF: true,
   enableFilePicker: true, // Enable file picker to open files. In WebViewer -> menu icon -> Open File
@@ -26,8 +26,8 @@ WebViewer({
     UI.setFitMode(UI.FitMode.FitPage);                // optional: fit whole spreads
 
     // Load document manager
-    loadedDocument = new DocumentManager(documentViewer);
-    await loadedDocument.initialize().then(() => {
+    globalThis.loadedDocument = new DocumentManager(documentViewer);
+    await globalThis.loadedDocument.initialize().then(() => {
     }).catch(error => {
       console.error('Failed to initialize document manager:', error);
       return;
@@ -36,18 +36,15 @@ WebViewer({
 });
 
 // Import modular components configuration from JSON file
-const importModularComponents = async () => {
+async function importModularComponents() {
   try {
     const response = await fetch(customUIFile);
     if (!response.ok)
       throw new Error(`Failed to import modular components configuration: ${response.statusText}`);
 
     let customUIConfig = JSON.stringify(await response.json());
-    customUIConfig = customUIConfig.replaceAll("{{APP_SITE_NAME}}", document.title);
-
     WebViewer.getInstance().UI.importModularComponents(JSON.parse(customUIConfig), functionMap);
-
   } catch (error) {
     throw new Error(`Failed to import modular components configuration: ${error.message}`);
   }
-};
+}

@@ -1,6 +1,6 @@
 # WebViewer - Redaction AI sample
 
-Add an AI-powered assistant to WebViewer, identify personal information in the provided PDF, and apply redaction to the identified information.
+Add an AI-powered assistant to WebViewer, detect Personally Identifiable Information (PII) in the provided PDF, and apply redaction to the identified information.
 
 [WebViewer](https://apryse.com/products/webviewer) is a powerful JavaScript-based PDF Library that is part of the [Apryse SDK](https://apryse.com/).
 

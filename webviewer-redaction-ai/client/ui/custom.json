@@ -451,7 +451,7 @@
       "dataElement": "AIPIIRedactionToolButton",
       "type": "customButton",
       "toolName": "AIPIIRedaction",
-      "title": "{{APP_SITE_NAME}}",
+      "title": "AI - Personally Identifiable Information (PII)",
       "img": "assets/ai-icon.svg",
       "onClick": "AIPIIRedactionClick"
     },

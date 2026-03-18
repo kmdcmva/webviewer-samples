@@ -2,7 +2,7 @@
 const applyRedactions = async () => {
   const { documentViewer, Search, annotationManager, Annotations } = WebViewer.getInstance().Core;
 
-  if (!aiAnalysisResult || !aiAnalysisResult.analysis) {
+  if (!globalThis.aiAnalysisResult || !globalThis.aiAnalysisResult.analysis) {
     console.error('No analysis result found. Please analyze the document first.');
     return;
   }
@@ -14,7 +14,7 @@ const applyRedactions = async () => {
   let piiEntities = [];
   try {
     // Extract entities from the analysis (assuming format from AI response)
-    const lines = aiAnalysisResult.analysis.split('\n');
+    const lines = globalThis.aiAnalysisResult.analysis.split('\n');
     lines.forEach(line => {
       if (line.trim() !== '')
         piiEntities.push(line.trim());

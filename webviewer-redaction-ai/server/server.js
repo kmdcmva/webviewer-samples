@@ -6,6 +6,7 @@ import handler from './handler.js';
 import dotenv from 'dotenv';
 
 dotenv.config();
+const port = Number(process.env.PORT) || 4040;
 
 // Use JSON body parser for API endpoints
 const app = express();
@@ -43,11 +44,11 @@ app.use('/__mocks__', express.static('__mocks__'));
 handler(app);
 
 // Run server
-app.listen(process.env.PORT, 'localhost', (err) => {
+app.listen(port, 'localhost', (err) => {
 	if (err) {
 		console.error(err);
 	} else {
-		console.info(`Server is listening at http://localhost:${process.env.PORT}/client/index.html`);
-		open(`http://localhost:${process.env.PORT}/client/index.html`);
+		console.info(`Server is listening at http://localhost:${port}/client/index.html`);
+		open(`http://localhost:${port}/client/index.html`);
 	}
 });
