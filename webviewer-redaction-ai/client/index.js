@@ -2,7 +2,7 @@ import DocumentManager from './document/manager.js';
 import functionMap from './ui/functionMap.js';
 const customUIFile = './ui/custom.json';
 
-WebViewer({
+const instance = await WebViewer({
   path: 'lib',
   initialDoc: globalThis.files[0],
   fullAPI: true,
@@ -10,28 +10,28 @@ WebViewer({
   enableFilePicker: true, // Enable file picker to open files. In WebViewer -> menu icon -> Open File
   enableRedaction: true,
   licenseKey: 'YOUR_LICENSE_KEY',
-}, document.getElementById('viewer')
-).then(instance => {
-  const { documentViewer } = instance.Core;
-  const { UI } = instance;
+}, document.getElementById('viewer'));
 
-  // Import modular components configuration from JSON file
-  importModularComponents();
+const { documentViewer } = instance.Core;
+const { UI } = instance;
 
-  documentViewer.addEventListener('documentLoaded', async () => {
-    // Switch to the Redact toolbar group
-    UI.setToolbarGroup('toolbarGroup-Redact');
+// Import modular components configuration from JSON file
+importModularComponents();
 
-    UI.setLayoutMode(UI.LayoutMode.FacingContinuous); // or Facing, Cover, CoverFacing
-    UI.setFitMode(UI.FitMode.FitPage);                // optional: fit whole spreads
+documentViewer.addEventListener('documentLoaded', async () => {
+  // Switch to the Redact toolbar group
+  UI.setToolbarGroup('toolbarGroup-Redact');
 
-    // Load document manager
-    globalThis.loadedDocument = new DocumentManager(documentViewer);
-    await globalThis.loadedDocument.initialize().then(() => {
-    }).catch(error => {
-      console.error('Failed to initialize document manager:', error);
-      return;
-    });
+  // Set layout to Facing Continuous and fit mode
+  // to Fit Page for better redaction experience
+  UI.setLayoutMode(UI.LayoutMode.FacingContinuous);
+  UI.setFitMode(UI.FitMode.FitPage);
+
+  // Load document manager
+  globalThis.loadedDocument = new DocumentManager(documentViewer);
+  await globalThis.loadedDocument.initialize().then(() => {
+  }).catch(error => {
+    console.error('Failed to initialize document manager:', error);
   });
 });
 

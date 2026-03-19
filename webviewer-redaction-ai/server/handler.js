@@ -1,10 +1,10 @@
 import { HumanMessage, SystemMessage as AssistantMessage } from '@langchain/core/messages';
 import LLMManager from './llmManager.js';
 import dotenv from 'dotenv';
-import { readFileSync } from 'fs';
-import { randomBytes } from 'crypto';
-import { join, dirname } from 'path';
-import { fileURLToPath } from 'url';
+import { readFileSync } from 'node:fs';
+import { randomBytes } from 'node:crypto';
+import { join, dirname } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { isMockingModeEnabled } from '../__mocks__/webviewer-redaction-ai.mock.js';
 
 dotenv.config();
@@ -23,7 +23,7 @@ const analysisStore = new Map();
 // Create LLMManager instance
 const llmManager = new LLMManager();
 
-export default (app) => {
+export default function registerHandlers(app) {
 
   // *********************************************
   // MOCKING MODE: No need to initialize endpoints

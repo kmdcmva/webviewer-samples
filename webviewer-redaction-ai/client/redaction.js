@@ -2,7 +2,7 @@
 const applyRedactions = async () => {
   const { documentViewer, Search, annotationManager, Annotations } = WebViewer.getInstance().Core;
 
-  if (!globalThis.aiAnalysisResult || !globalThis.aiAnalysisResult.analysis) {
+  if (!globalThis.aiAnalysisResult?.analysis) {
     console.error('No analysis result found. Please analyze the document first.');
     return;
   }

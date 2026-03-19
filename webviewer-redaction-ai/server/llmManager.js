@@ -7,10 +7,8 @@ dotenv.config();
 // LLMManager - Manages LLM initialization, configuration, and execution
 // Handles OpenAI chat models, token counting, and text processing
 class LLMManager {
-  constructor() {
-    this.llm = null;
-    this.parser = null;
-  }
+  llm = null;
+  parser = null;
 
   // Initialize LangChain components (LLM and parser)
   initialize() {
@@ -23,8 +21,8 @@ class LLMManager {
       this.llm = new ChatOpenAI({
         apiKey: process.env.OPENAI_API_KEY,
         modelName: process.env.OPENAI_MODEL,
-        maxTokens: parseInt(process.env.OPENAI_MAX_TOKENS),
-        temperature: parseFloat(process.env.OPENAI_TEMPERATURE)
+        maxTokens: Number.parseInt(process.env.OPENAI_MAX_TOKENS, 10),
+        temperature: Number.parseFloat(process.env.OPENAI_TEMPERATURE)
       });
 
       this.parser = new StringOutputParser();
@@ -43,10 +41,7 @@ class LLMManager {
   // Check LangChain initialization status
   // @returns {boolean} True if initialized, false otherwise
   isInitialized() {
-    if (!this.llm || !this.parser)
-      return false;
-
-    return true;
+    return !!this.llm && !!this.parser;
   }
 
   // Execute messages with LLM and parse response

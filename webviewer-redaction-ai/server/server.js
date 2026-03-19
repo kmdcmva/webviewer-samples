@@ -21,7 +21,7 @@ app.use(bodyParser.text());
 // without needing a backend connection.
 app.use(function injectModeEnv(req, res, next) {
 	if (req.path === '/client/index.html') {
-		import('fs').then(fs => {
+		import('node:fs').then(fs => {
 			fs.readFile('client/index.html', 'utf8', (err, data) => {
 				if (err) return next();
 				const mode = process.env.NODE_ENV || 'default';

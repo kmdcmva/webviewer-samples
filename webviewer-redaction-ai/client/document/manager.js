@@ -29,7 +29,7 @@ class DocumentManager {
           const pageText = await this.#instance.loadPageText(pageIndex);
           this.text += `${pageText}\n`;
         } catch (error) {
-          this.text += `[Error loading page content]\n`;
+          this.text += `[Error loading page content: ${error.message}]\n`;
           continue;
         }
       }
