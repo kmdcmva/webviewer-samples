@@ -8,7 +8,7 @@ const MOCK_RESPONSES = {
 
 // Check if mocking mode is enabled
 export const isMockingModeEnabled = () => {
-  if (globalThis.window !== undefined)
+  if (globalThis.window)
     return globalThis.window.MODE_ENV === 'mocking';
 
   return process.env.NODE_ENV === 'mocking';
