@@ -16,7 +16,16 @@ const { documentViewer } = instance.Core;
 const { UI } = instance;
 
 // Import modular components configuration from JSON file
-importModularComponents();
+try {
+  const response = await fetch(customUIFile);
+  if (!response.ok)
+    throw new Error(`Failed to import modular components configuration: ${response.statusText}`);
+
+  let customUIConfig = JSON.stringify(await response.json());
+  WebViewer.getInstance().UI.importModularComponents(JSON.parse(customUIConfig), functionMap);
+} catch (error) {
+  throw new Error(`Failed to import modular components configuration: ${error.message}`);
+}
 
 documentViewer.addEventListener('documentLoaded', async () => {
   // Switch to the Redact toolbar group
@@ -34,17 +43,3 @@ documentViewer.addEventListener('documentLoaded', async () => {
     console.error('Failed to initialize document manager:', error);
   });
 });
-
-// Import modular components configuration from JSON file
-async function importModularComponents() {
-  try {
-    const response = await fetch(customUIFile);
-    if (!response.ok)
-      throw new Error(`Failed to import modular components configuration: ${response.statusText}`);
-
-    let customUIConfig = JSON.stringify(await response.json());
-    WebViewer.getInstance().UI.importModularComponents(JSON.parse(customUIConfig), functionMap);
-  } catch (error) {
-    throw new Error(`Failed to import modular components configuration: ${error.message}`);
-  }
-}
