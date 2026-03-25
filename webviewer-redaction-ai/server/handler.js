@@ -5,7 +5,6 @@ import { readFileSync } from 'node:fs';
 import { randomBytes } from 'node:crypto';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { isMockingModeEnabled } from '../__mocks__/webviewer-redaction-ai.mock.js';
 
 dotenv.config();
 
@@ -24,15 +23,6 @@ const analysisStore = new Map();
 const llmManager = new LLMManager();
 
 export default function registerHandlers(app) {
-
-  // *********************************************
-  // MOCKING MODE: No need to initialize endpoints
-  // if mocking mode is used, since client will
-  // use mock responses
-  if (isMockingModeEnabled())
-    return;
-  // *********************************************
-
   // Initialize LangChain on startup
   llmManager.initialize();
 
