@@ -7,12 +7,13 @@ import dotenv from 'dotenv';
 
 dotenv.config();
 const port = Number(process.env.PORT) || 4040;
-// ************************************
-// For testing purposes only, set the environment variable
-// NO_OPEN=true to prevent the server from opening the
-// browser automatically when it starts.
-const shouldOpenBrowser = !process.argv.includes('--no-open');
-// ************************************
+// For testing purposes only, you can prevent the server from
+// opening the browser automatically when it starts by either:
+//   - setting the environment variable NO_OPEN=true, or
+//   - passing the CLI flag --no-open
+const noOpenEnv = String(process.env.NO_OPEN || '').toLowerCase() === 'true';
+const noOpenFlag = process.argv.includes('--no-open');
+const shouldOpenBrowser = !(noOpenEnv || noOpenFlag);
 
 // Use JSON body parser for API endpoints
 const app = express();

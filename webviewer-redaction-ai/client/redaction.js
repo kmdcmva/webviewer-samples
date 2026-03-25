@@ -28,10 +28,13 @@ const applyRedactions = async () => {
     return;
 
   // Configure the search modes
-  const modes = [Search.Mode.PAGE_STOP,
-  Search.Mode.HIGHLIGHT,
-  Search.Mode.CASE_SENSITIVE,
-  Search.Mode.WHOLE_WORD];
+  const modes = [
+    Search.Mode.PAGE_STOP,
+    Search.Mode.HIGHLIGHT,
+    Search.Mode.CASE_SENSITIVE,
+    Search.Mode.WHOLE_WORD
+  ];
+  const searchMode = modes.reduce((combinedModes, mode) => combinedModes | mode, 0);
 
   // Search for PII entities then create redactions
   let searchOptions = null;
@@ -67,7 +70,7 @@ const applyRedactions = async () => {
         },
       };
 
-      documentViewer.textSearchInit(searchText, modes, searchOptions);
+      documentViewer.textSearchInit(searchText, searchMode, searchOptions);
     });
   }
 };

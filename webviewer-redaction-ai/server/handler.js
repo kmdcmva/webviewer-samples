@@ -1,4 +1,4 @@
-import { HumanMessage, SystemMessage as AssistantMessage } from '@langchain/core/messages';
+import { HumanMessage, SystemMessage } from '@langchain/core/messages';
 import LLMManager from './llmManager.js';
 import dotenv from 'dotenv';
 import { readFileSync } from 'node:fs';
@@ -28,14 +28,14 @@ export default function registerHandlers(app) {
 
   // Prepare assistant prompt with PII classifications and guardrail rules
   let prepareAssistantPrompt = (guardRail) => {
-    let prompt = guardRail.assistantPrompt.replace('PIICLASSIFICATIONSPLACEHOLDER', guardRail.piiClassifications.flatMap(item => item.details).join(', ').replace(/$/, ''));
+    let prompt = guardRail.assistantPrompt.replace('PIICLASSIFICATIONSPLACEHOLDER', guardRail.piiClassifications.flatMap(item => item.details).join(', '));
     prompt += guardRail.rulesSet.map(rule => `${rule}`).join(' ');
     return prompt;
   };
 
-  // Create assistant message
-  let assistantMessage = prepareAssistantPrompt(guardRail);
-  assistantMessage = new AssistantMessage(assistantMessage);
+  // Create system prompt message
+  let systemMessage = prepareAssistantPrompt(guardRail);
+  systemMessage = new SystemMessage(systemMessage);
 
   // Endpoint to receive document text from client
   app.post('/api/send-text', async (request, response) => {
@@ -106,7 +106,7 @@ export default function registerHandlers(app) {
 
       // AI processing with LangChain for PII detection
       const humanMessage = new HumanMessage(document.text);
-      const aiResult = await llmManager.executeMessages([assistantMessage, humanMessage]);
+      const aiResult = await llmManager.executeMessages([systemMessage, humanMessage]);
 
       // Store analysis results
       const analysisData = {

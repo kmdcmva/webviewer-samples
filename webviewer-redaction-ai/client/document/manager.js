@@ -17,6 +17,7 @@ class DocumentManager {
 
   async initialize() {
     this.#instance = this.#documentViewer.getDocument();
+    this.#isValid = !!this.#instance;
     if (!this.#isValid) {
       console.error('Failed to initialize document manager.');
       return;

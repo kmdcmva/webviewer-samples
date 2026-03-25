@@ -59,13 +59,13 @@ class LLMManager {
       return null;
     }
 
-    const parsedResponse = await this.parser.parse(response);
+    const parsedResponse = await this.parser.parse(response.content);
     if (!parsedResponse) {
       console.error('Parsing LLM response returned no result');
       return null;
     }
 
-    return parsedResponse.content;
+    return parsedResponse;
   }
 }
 
