@@ -5,6 +5,7 @@ import logger from './logger.js';
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
+import { randomUUID } from 'node:crypto';
 
 dotenv.config();
 
@@ -156,8 +157,16 @@ export default function registerHandlers(app) {
 
       response.status(200).json({ response: cleanResponse });
     } catch (error) {
+      const requestId = randomUUID();
+      const isDebugMode = process.env.DEBUG_ERRORS === 'true' || process.env.NODE_ENV === 'development';
+
+      logger.error(`Chat API error [requestId=${requestId}]`, error);
+
       response.status(500).json({
-        error: error.message || 'An error occurred while processing the chat request'
+        error: isDebugMode
+          ? (error?.message || 'An error occurred while processing the chat request')
+          : 'An internal server error occurred while processing the chat request',
+        requestId
       });
     }
   });

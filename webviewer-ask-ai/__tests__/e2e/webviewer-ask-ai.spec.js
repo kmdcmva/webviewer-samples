@@ -27,7 +27,7 @@ test('Chatbot panel exists in DOM', async ({ page }) => {
 
   const panel = page.locator('div.ModularPanel[data-element="askWebSDKPanel"]');
   await expect(panel).toHaveCount(1, { timeout: timeout });
-  await expect(panel).toBeVisible();
+  await expect(panel).toBeVisible({ timeout: timeout });
 });
 
 // Validate the existence of the summarizing selection button in the DOM.
