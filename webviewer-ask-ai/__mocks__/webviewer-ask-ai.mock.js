@@ -2,34 +2,38 @@
 // allowing developers to test and develop features without relying on actual
 // API calls.
 
-// The mock responses are predefined based on specific prompt lines,
-// simulating the behavior of the real module in a controlled environment.
-const MOCK_RESPONSES = {
+export const MOCK_RESPONSE = {
   DOCUMENT_QUESTION: 'In 2011, Rosneft undertook several social responsibility initiatives, including: 1. Support for education by providing RUB 141 million to higher education institutions and extending loans totaling RUB 3.6 million to 97 workers for educational courses. 2. Charity efforts focused on socio-economic projects, healthcare, education, culture, and sports, with a total spending of RUB 2.9 billion on charity. 3. Maintenance of social infrastructure, with spending of RUB 1.0 billion aimed at optimizing facilities for employees and communities [14][15].',
-  SELECTED_TEXT_SUMMARY: 'The Tuapse license area covers 12,000 square km in the Black Sea and has geological similarities to the West-Kuban Trough, a historic oil production region in Russia [6]. The Tuapse Block has undergone comprehensive 2D seismic work, with the most promising areas also analyzed using 3D seismic technology [6]. Current data indicates the presence of 20 promising structures with an estimated 8.9 billion barrels of recoverable oil resources [6].'
+  SELECTED_TEXT_SUMMARY: 'The Tuapse license area covers 12,000 square km in the Black Sea and has geological similarities to the West-Kuban Trough, a historic oil production region in Russia [6]. The Tuapse Block has undergone comprehensive 2D seismic work, with the most promising areas also analyzed using 3D seismic technology [6]. Current data indicates the presence of 20 promising structures with an estimated 8.9 billion barrels of recoverable oil resources [6].',
+  DOCUMENT_CONTEXTUAL_QUESTIONS: '• What strategic partnerships did Rosneft establish in 2011 for offshore exploration?\n• How did Rosneft\'s resource base change in 2011 compared to previous years?\n• What social responsibility initiatives did Rosneft undertake in 2011?'
 };
 
-// Checks if the application is running in mocking mode,
-// which can be determined by checking a specific environment variable.
-// This allows developers to easily switch between real and mock 
-// implementations based on their development needs.
-export const isMockingModeEnabled = () => {
-  if (typeof window !== 'undefined')
-    return window.MODE_ENV === 'mocking';
+// Registers a Playwright route interceptor that mocks all /api/chat POST requests,
+// preventing real network calls to the AI backend during tests.
+export const registerApiChatMock = async (page) => {
+  await page.route('/api/chat', async (route) => {
+    const requestBody = JSON.parse(route.request().postData() || '{}');
+    const { promptType } = requestBody;
 
-  return process.env.NODE_ENV === 'mocking';
-};
+    let response;
+    switch (promptType) {
+      case 'DOCUMENT_CONTEXTUAL_QUESTIONS':
+        response = MOCK_RESPONSE.DOCUMENT_CONTEXTUAL_QUESTIONS;
+        break;
+      case 'DOCUMENT_QUESTION':
+        response = MOCK_RESPONSE.DOCUMENT_QUESTION;
+        break;
+      case 'SELECTED_TEXT_SUMMARY':
+        response = MOCK_RESPONSE.SELECTED_TEXT_SUMMARY;
+        break;
+      default:
+        response = '';
+    }
 
-// Simulates an API call to get a chat response based on
-// the provided prompt line. It returns a promise that 
-// resolves with the corresponding mock response after a delay,
-// mimicking the asynchronous nature of real API calls.
-export const getMockChatResponse = (promptLine) => {
-  const mockResponse = MOCK_RESPONSES[promptLine] || '';
-
-  return new Promise((resolve) => {
-    setTimeout(() => {
-      resolve(mockResponse);
-    }, 1000);
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({ response }),
+    });
   });
 };

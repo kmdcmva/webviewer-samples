@@ -7,12 +7,16 @@ export default defineConfig({
   testDir: '__tests__',
   fullyParallel: true,
   reporter: 'html',
-  timeout: 60000,
   retries: 0,
   use: {
     headless: true,
-    baseURL: 'http://localhost:4040', // Adjust if your dev server uses a different port
+    baseURL: 'http://localhost:4040/',
     screenshot: 'only-on-failure',
     video: 'retain-on-failure',
+  },
+  webServer: {
+    command: 'npm start -- --no-open',
+    url: 'http://localhost:4040/client/index.html',
+    reuseExistingServer: true,
   },
 });

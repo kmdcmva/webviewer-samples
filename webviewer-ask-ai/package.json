@@ -7,24 +7,20 @@
   "scripts": {
     "postinstall": "node tools/copy-webviewer-files.js",
     "start": "node server/serve.js",
-    "start:mock": "cross-env NODE_ENV=mocking npm start",
-    "playwright": "playwright test",
-    "playwright:ui": "playwright test --ui",
-    "test:e2e": "npm-run-all --parallel start:mock playwright",
-    "test:e2e:ui": "npm-run-all --parallel start:mock playwright:ui"
+    "test:e2e": "npx playwright test",
+    "test:e2e:ui": "npx playwright test --ui",
+    "test:e2e:debug": "npx playwright test --debug"
   },
   "author": "Apryse Systems Inc.",
   "devDependencies": {
-    "npm-run-all": "^4.1.5",
     "@playwright/test": "^1.58.2",
     "body-parser": "^2.2.2",
-    "cross-env": "^10.1.0",
     "fs-extra": "^11.3.4",
     "open": "^11.0.0"
   },
   "dependencies": {
-    "@langchain/core": "^1.1.32",
-    "@langchain/openai": "^1.2.13",
+    "@langchain/core": "^1.1.36",
+    "@langchain/openai": "^1.3.1",
     "@pdftron/webviewer": "^11.11.0",
     "dotenv": "^17.3.1",
     "express": "^5.2.1"

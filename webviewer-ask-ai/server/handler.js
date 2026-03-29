@@ -2,10 +2,9 @@ import { HumanMessage, SystemMessage as AssistantMessage } from '@langchain/core
 import dotenv from 'dotenv';
 import LLMManager from './llmManager.js';
 import logger from './logger.js';
-import { isMockingModeEnabled } from '../__mocks__/webviewer-ask-ai.mock.js';
-import { readFileSync } from 'fs';
-import { fileURLToPath } from 'url';
-import { dirname, join } from 'path';
+import { readFileSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
+import { dirname, join } from 'node:path';
 
 dotenv.config();
 
@@ -20,16 +19,7 @@ const GUARD_RAILS = configData.GUARD_RAILS;
 // Create LLMManager instance
 const llmManager = new LLMManager();
 
-export default (app) => {
-
-  // *********************************************
-  // MOCKING MODE: No need to initialize endpoints
-  // if mocking mode is used, since client will
-  // use mock responses
-  if (isMockingModeEnabled())
-    return;
-  // *********************************************
-
+export default function registerHandlers(app) {
   // Initialize LangChain on startup
   llmManager.initialize();
 
@@ -167,7 +157,7 @@ export default (app) => {
       response.status(200).json({ response: cleanResponse });
     } catch (error) {
       response.status(500).json({
-        error: 'An error occurred while processing your request'
+        error: error.message || 'An error occurred while processing the chat request'
       });
     }
   });

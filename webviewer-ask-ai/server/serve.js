@@ -6,50 +6,35 @@ import handler from './handler.js';
 import dotenv from 'dotenv';
 
 dotenv.config();
+const port = Number(process.env.PORT) || 4040;
+// For testing purposes only, you can prevent the server from
+// opening the browser automatically when it starts by either:
+//   - setting the environment variable NO_OPEN=true, or
+//   - passing the CLI flag --no-open
+const noOpenEnv = String(process.env.NO_OPEN || '').toLowerCase() === 'true';
+const noOpenFlag = process.argv.includes('--no-open');
+const shouldOpenBrowser = !(noOpenEnv || noOpenFlag);
 
 // Use JSON body parser for API endpoints
 const app = express();
 app.use(bodyParser.json());
 app.use(bodyParser.text());
 
-// Inject MODE_ENV into index.html before
-// static serving. This allows client-side
-// code to check the mode (e.g., 'mocking')
-// and adjust behavior accordingly.
-// MOCKING MODE is used to test the frontend
-// without needing a backend connection.
-app.use(function injectModeEnv(req, res, next) {
-	if (req.path === '/client/index.html') {
-		import('fs').then(fs => {
-			fs.readFile('client/index.html', 'utf8', (err, data) => {
-				if (err) return next();
-				const mode = process.env.NODE_ENV || 'default';
-				// Inject window.MODE_ENV before </head>
-				const injected = data.replace('</head>', `<script>window.MODE_ENV='${mode}';</script>\n</head>`);
-				res.set('Content-Type', 'text/html');
-				res.send(injected);
-			});
-		});
-	} else {
-		next();
-	}
-});
-
 // For statically serving 'client' folder
 app.use('/client', express.static('client'));
-// Serve shared browser mock modules
-app.use('/__mocks__', express.static('__mocks__'));
-// Serve config directory for client-side access
+// Server shared browser mock modules
 app.use('/config', express.static('config'));
 
 handler(app);
 
 // Run server
-app.listen(process.env.PORT, 'localhost', (err) => {
+app.listen(port, 'localhost', (err) => {
 	if (err) {
 		console.error(err);
 	} else {
-		console.info(`Server is listening at http://localhost:${process.env.PORT}/client/index.html`);
-		open(`http://localhost:${process.env.PORT}/client/index.html`);
+		console.info(`Server is listening at http://localhost:${port}/client/index.html`);
+		if (shouldOpenBrowser) {
+			open(`http://localhost:${port}/client/index.html`);
+		}
 	}
 });
