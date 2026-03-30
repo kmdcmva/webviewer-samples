@@ -2,62 +2,125 @@
 // using the Playwright testing framework.
 
 import { test, expect } from '@playwright/test';
-import { registerApiChatMock } from '../../__mocks__/webviewer-ask-ai.mock.js';
-const timeout = 30000;
+import { MOCK_RESPONSE, registerApiChatMock } from '../../__mocks__/webviewer-ask-ai.mock.js';
 
+// Register the API chat mock before each test
+// to ensure consistent and predictable responses
+// from the chatbot during testing.
 test.beforeEach(async ({ page }) => {
   await registerApiChatMock(page);
 });
 
-// Validate the existence of the chatbot toggle button in the DOM.
-test('Chatbot toggle button exists in DOM', async ({ page }) => {
-  // Go to the app page
+// Validate the chatbot toggle button visibility.
+test('Chatbot toggle button visibility', async ({ page }) => {
   await page.goto('/client/index.html');
 
-  // Locate the askWebSDKPanelToggle button of ModularHeader in DOM
   const toggle = page.locator('button[data-element="askWebSDKPanelToggle"]');
-  await expect(toggle).toHaveCount(1);
+  await toggle.waitFor({ state: 'visible' });
   await expect(toggle).toBeVisible();
 });
 
-// Validate the existence of the chatbot panel in the DOM.
-test('Chatbot panel exists in DOM', async ({ page }) => {
-  // Go to the app page
+// Validate the chatbot panel visibility.
+test('Chatbot panel visibility', async ({ page }) => {
   await page.goto('/client/index.html');
 
   const panel = page.locator('div.ModularPanel[data-element="askWebSDKPanel"]');
-  await expect(panel).toHaveCount(1, { timeout: timeout });
-  await expect(panel).toBeVisible({ timeout: timeout });
+  await panel.waitFor({ state: 'visible' });
+  await expect(panel).toBeVisible();
 });
 
-// Validate the existence of the summarizing selection button in the DOM.
-test('Summarizing selection button exists in DOM', async ({ page }) => {
-  // Go to the app page
+// Validate the summarizing selection button visibility.
+test('Summarizing selection button visibility', async ({ page }) => {
   await page.goto('/client/index.html');
+  await simulateDocumentTextSelection(page, {
+    pageNumber: 2,
+    start: { x: 56.69320848, y: 32.40185332 },
+    end: { x: 105.11567193, y: 40.06439572 },
+  });
 
-  // Wait until WebViewer is fully initialized and a document is loaded.
-  await page.waitForFunction(() => {
-    const instance = globalThis.WebViewer?.getInstance?.();
-    if (!instance?.Core?.documentViewer)
-      return false;
+  const popupButton = page.locator('button[data-element="askWebSDKButton"]');
+  await popupButton.waitFor({ state: 'visible' });
+  await expect(popupButton).toBeVisible();
+});
 
-    return !!instance.Core.documentViewer.getDocument();
-  }, { timeout: timeout });
+// Simulates user asking free question within the chatbot panel
+test('Ask free question', async ({ page }) => {
+  await askQuestion(page);
+});
 
-  // Locate the askWebSDKButton button in the TextPopup
-  await page.evaluate((pageNumber) => {
+// Simulates user selecting text on the document and asking the chatbot to summarize it
+test('Summarize selected text', async ({ page }) => {
+  await page.goto('/client/index.html');
+  await simulateDocumentTextSelection(page, {
+    pageNumber: 6,
+    start: { x: 179.72459999999998, y: 536.4002 },
+    end: { x: 141.165, y: 415.9352 },
+  });
+
+  // Click the "Summarize selection" button in the TextPopup
+  const popupButton = page.locator('button[data-element="askWebSDKButton"]');
+  await popupButton.click();
+
+  // Validate that the assistant's response contains the expected text from the mock response
+  const assistantResponse = page.locator('.askWebSDKAssistantMessageClass').last();
+  await expect(assistantResponse).toContainText(MOCK_RESPONSE.SELECTED_TEXT_SUMMARY);
+});
+
+// Simulates user hiding and showing the chatbot panel using the toggle button in the header
+test('Hide/Show chatbot panel', async ({ page }) => {
+  await askQuestion(page);
+
+  // Locate the toggle button and chatbot panel
+  const toggle = page.locator('button[data-element="askWebSDKPanelToggle"]');
+  const panel = page.locator('div.ModularPanel[data-element="askWebSDKPanel"]');
+
+  // Hide the chatbot panel
+  await toggle.click();
+  await expect(panel).not.toBeVisible();
+
+  // Show the chatbot panel again
+  await toggle.click();
+  await expect(panel).toBeVisible();
+});
+
+// Helper function to select document text and trigger the TextPopup.
+const simulateDocumentTextSelection = async (page, { pageNumber, start, end }) => {
+  await page.locator('div.ModularPanel[data-element="askWebSDKPanel"]').waitFor({ state: 'visible' });
+
+  await page.evaluate(({ pageNumber, start, end }) => {
     const instance = globalThis.WebViewer.getInstance();
     const core = instance.Core;
     const UI = instance.UI;
     const documentViewer = core.documentViewer;
     const textSelectTool = documentViewer.getTool(core.Tools.ToolNames.TEXT_SELECT);
+
     documentViewer.setCurrentPage(pageNumber);
     UI.setToolMode(core.Tools.ToolNames.TEXT_SELECT);
-    textSelectTool.select({ pageNumber: pageNumber, x: 56.69320848, y: 32.40185332 }, { pageNumber: pageNumber, x: 105.11567193, y: 40.06439572 });
-    UI.openElements(['textPopup']);
-  }, 2);
+    textSelectTool.select({ pageNumber, ...start }, { pageNumber, ...end });
+  }, { pageNumber, start, end });
 
-  const popupButton = page.locator('button[data-element="askWebSDKButton"]');
-  await expect(popupButton).toHaveCount(1);
-  await expect(popupButton).toBeVisible({ timeout: timeout });
-});
+  await page.waitForFunction(() => {
+    const instance = globalThis.WebViewer.getInstance();
+    const selectedText = instance?.Core?.documentViewer?.getSelectedText?.();
+    return typeof selectedText === 'string' && selectedText.trim().length > 0;
+  });
+
+  await page.evaluate(() => {
+    const instance = globalThis.WebViewer.getInstance();
+    instance.UI.openElements(['textPopup']);
+  });
+};
+
+// Helper function to simulate asking a free question in the chatbot panel
+const askQuestion = async (page) => {
+  await page.goto('/client/index.html');
+
+  // Locate the question input field, enter a question, and submit it by pressing 'Enter'
+  const questionInput = page.locator('#askWebSDKQuestionInput');
+  await questionInput.fill('What social responsibility initiatives did Rosneft undertake in 2011?');
+  await questionInput.press('Enter');
+
+  // Validate that the assistant's response contains the expected text from the mock response
+  const assistantResponse = page.locator('.askWebSDKAssistantMessageClass').last();
+  await expect(assistantResponse).toContainText(MOCK_RESPONSE.DOCUMENT_QUESTION);
+};
