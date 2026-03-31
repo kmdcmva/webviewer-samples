@@ -59,6 +59,7 @@ test('Summarize selected text', async ({ page }) => {
 
   // Click the "Summarize selection" button in the TextPopup
   const popupButton = page.locator('button[data-element="askWebSDKButton"]');
+  await popupButton.waitFor({ state: 'visible' });
   await popupButton.click();
 
   // Validate that the assistant's response contains the expected text from the mock response
