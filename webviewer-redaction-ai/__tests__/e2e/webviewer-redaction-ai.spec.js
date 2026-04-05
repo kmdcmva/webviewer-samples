@@ -67,3 +67,54 @@ test('Perform AI PII redaction', async ({ page }) => {
   // Ensure mocked analysis text is the value used by the UI workflow.
   await expect.poll(() => page.evaluate(() => globalThis.aiAnalysisResult?.analysis)).toBe(MOCK_DATA.analysisText);
 });
+
+// Validate server-side in-memory lifecycle.
+// This test assumes analyzing a document twice.
+// The first analysis should succeed.
+// The second should fail with a 404 error,
+// indicating that the raw document was released from memory after the first analysis.
+test('In-memory store releases raw document after analysis', async ({ request }) => {
+
+  // First analysis that should succeed.
+  const documentText = 'Customer Jane Doe\nEmail jane.doe@example.com\nPhone 123-456-7890';
+
+  const sendTextResponse = await request.post('/api/send-text', {
+    data: { documentText }
+  });
+
+  expect(sendTextResponse.ok()).toBeTruthy();
+  const sendTextBody = await sendTextResponse.json();
+  expect(sendTextBody.success).toBe(true);
+  expect(sendTextBody.textLength).toBe(documentText.length);
+  expect(typeof sendTextBody.documentId).toBe('string');
+  expect(sendTextBody.documentId.length).toBeGreaterThan(0);
+
+  const { documentId } = sendTextBody;
+
+  const analyzeResponse = await request.post('/api/analyze-pii', {
+    data: { documentId }
+  });
+  
+  expect(analyzeResponse.ok()).toBeTruthy();
+  const analyzeBody = await analyzeResponse.json();
+  expect(analyzeBody.success).toBe(true);
+  expect(analyzeBody.documentId).toBe(documentId);
+  
+  const resultsResponse = await request.get(`/api/get-results/${documentId}`);
+  expect(resultsResponse.ok()).toBeTruthy();
+  const resultsBody = await resultsResponse.json();
+  expect(resultsBody.success).toBe(true);
+  expect(resultsBody.documentId).toBe(documentId);
+  expect(typeof resultsBody.analysis).toBe('string');
+
+
+  // Second analysis that should fail with 404, confirming the document was released from memory.
+  const analyzeAgainResponse = await request.post('/api/analyze-pii', {
+    data: { documentId }
+  });
+
+  expect(analyzeAgainResponse.status()).toBe(404);
+  const analyzeAgainBody = await analyzeAgainResponse.json();
+  expect(analyzeAgainBody.success).toBe(false);
+  expect(analyzeAgainBody.error).toBe('Document not found');
+});

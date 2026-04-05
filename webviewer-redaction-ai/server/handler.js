@@ -1,5 +1,6 @@
 import { HumanMessage, SystemMessage } from '@langchain/core/messages';
 import LLMManager from './llmManager.js';
+import InMemoryStore from './inMemoryStore.js';
 import dotenv from 'dotenv';
 import { readFileSync } from 'node:fs';
 import { randomBytes } from 'node:crypto';
@@ -15,12 +16,10 @@ const configPath = join(__dirname, './config.json');
 const config = JSON.parse(readFileSync(configPath, 'utf8'));
 const { guardRail } = config;
 
-// Storage for documents and analysis results
-const documentStore = new Map();
-const analysisStore = new Map();
-
 // Create LLMManager instance
 const llmManager = new LLMManager();
+// Create InMemoryStore instance for managing documents and analysis results with TTL and max entry limits to optimize memory usage and ensure timely cleanup of stale data.
+const inMemoryStore = new InMemoryStore();
 
 export default function registerHandlers(app) {
   // Initialize LangChain on startup
@@ -40,7 +39,7 @@ export default function registerHandlers(app) {
   // Endpoint to receive document text from client
   app.post('/api/send-text', async (request, response) => {
     try {
-      const { documentText, timestamp } = request.body;
+      const { documentText } = request.body;
 
       if (!documentText) {
         return response.status(400).json({
@@ -52,13 +51,9 @@ export default function registerHandlers(app) {
       // Generate unique document ID
       const documentId = `doc_${Date.now()}_${randomBytes(9).toString('base64url')}`;
 
-      // Store the document text
-      documentStore.set(documentId, {
-        text: documentText,
-        receivedAt: new Date().toISOString(),
-        clientTimestamp: timestamp,
-        textLength: documentText.length
-      });
+      // Store raw document text in memory with associated metadata such as text length.
+      // This allows for later retrieval and analysis while optimizing memory usage by not retaining the raw text longer than necessary.
+      inMemoryStore.storeDocument(documentId, documentText);
 
       response.json({
         success: true,
@@ -90,7 +85,7 @@ export default function registerHandlers(app) {
       }
 
       // Retrieve document from storage
-      const document = documentStore.get(documentId);
+      const document = inMemoryStore.getDocument(documentId);
       if (!document) {
         return response.status(404).json({
           error: 'Document not found',
@@ -118,7 +113,8 @@ export default function registerHandlers(app) {
         analysis: aiResult
       };
 
-      analysisStore.set(documentId, analysisData);
+      // Store analysis results in memory and release raw document text to optimize memory usage
+      inMemoryStore.storeAnalysis(documentId, analysisData);
 
       response.json({
         success: true,
@@ -149,7 +145,7 @@ export default function registerHandlers(app) {
       }
 
       // Retrieve analysis results from storage
-      const results = analysisStore.get(documentId);
+      const results = inMemoryStore.getAnalysis(documentId);
       if (!results) {
         return response.status(404).json({
           error: 'Analysis results not found',
