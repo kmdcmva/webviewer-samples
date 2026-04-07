@@ -4,6 +4,8 @@
 import { test, expect } from '@playwright/test';
 import { MOCK_RESPONSE, registerApiChatMock } from '../../__mocks__/webviewer-ask-ai.mock.js';
 
+const question = 'What social responsibility initiatives did Rosneft undertake in 2011?';
+
 // Register the API chat mock before each test
 // to ensure consistent and predictable responses
 // from the chatbot during testing.
@@ -45,7 +47,16 @@ test('Summarizing selection button visibility', async ({ page }) => {
 
 // Simulates user asking free question within the chatbot panel
 test('Ask free question', async ({ page }) => {
-  await askQuestion(page);
+  await page.goto('/client/index.html');
+
+  // Locate the question input field, enter a question, and submit it by pressing 'Enter'
+  const questionInput = page.locator('#askWebSDKQuestionInput');
+  await questionInput.fill(question);
+  await questionInput.press('Enter');
+
+  // Validate that the assistant's response contains the expected text from the mock response
+  const assistantResponse = page.locator('.askWebSDKAssistantMessageClass').last();
+  await expect(assistantResponse).toContainText(MOCK_RESPONSE.DOCUMENT_QUESTION);
 });
 
 // Simulates user selecting text on the document and asking the chatbot to summarize it
@@ -67,9 +78,16 @@ test('Summarize selected text', async ({ page }) => {
   await expect(assistantResponse).toContainText(MOCK_RESPONSE.SELECTED_TEXT_SUMMARY);
 });
 
-// Simulates user hiding and showing the chatbot panel using the toggle button in the header
+// Simulates user hiding and showing the chatbot panel
+// via clicking the toggle button in the header.
+// Chatbot panel should maintain the visibility of the conversation.
 test('Hide/Show chatbot panel', async ({ page }) => {
-  await askQuestion(page);
+  await page.goto('/client/index.html');
+
+  // Locate the question input field, enter a question, and submit it by pressing 'Enter'
+  const questionInput = page.locator('#askWebSDKQuestionInput');
+  await questionInput.fill(question);
+  await questionInput.press('Enter');
 
   // Locate the toggle button and chatbot panel
   const toggle = page.locator('button[data-element="askWebSDKPanelToggle"]');
@@ -110,18 +128,4 @@ const simulateDocumentTextSelection = async (page, { pageNumber, start, end }) =
     const instance = globalThis.WebViewer.getInstance();
     instance.UI.openElements(['textPopup']);
   });
-};
-
-// Helper function to simulate asking a free question in the chatbot panel
-const askQuestion = async (page) => {
-  await page.goto('/client/index.html');
-
-  // Locate the question input field, enter a question, and submit it by pressing 'Enter'
-  const questionInput = page.locator('#askWebSDKQuestionInput');
-  await questionInput.fill('What social responsibility initiatives did Rosneft undertake in 2011?');
-  await questionInput.press('Enter');
-
-  // Validate that the assistant's response contains the expected text from the mock response
-  const assistantResponse = page.locator('.askWebSDKAssistantMessageClass').last();
-  await expect(assistantResponse).toContainText(MOCK_RESPONSE.DOCUMENT_QUESTION);
 };
