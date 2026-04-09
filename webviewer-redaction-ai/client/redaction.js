@@ -2,11 +2,6 @@
 const applyRedactions = async () => {
   const { documentViewer, Search, annotationManager, Annotations } = WebViewer.getInstance().Core;
 
-  if (!globalThis.aiAnalysisResult?.analysis) {
-    console.error('No analysis result found. Please analyze the document first.');
-    return;
-  }
-
   // Ensure the user has permissions to create/edit/delete annotations
   annotationManager.promoteUserToAdmin();
 

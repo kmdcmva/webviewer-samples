@@ -3,8 +3,10 @@ import { applyRedactions } from '../redaction.js';
 
 const functionMap = {
   'AIPIIRedactionClick': async () => {
-    await analyzeDocumentForPII();
-    await applyRedactions();
+    const analysisSuccess = await analyzeDocumentForPII();
+    if (analysisSuccess) {
+      await applyRedactions();
+    }
   },
 };
 

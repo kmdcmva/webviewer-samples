@@ -3,7 +3,6 @@ import LLMManager from './llmManager.js';
 import InMemoryStore from './inMemoryStore.js';
 import dotenv from 'dotenv';
 import { readFileSync } from 'node:fs';
-import { randomBytes } from 'node:crypto';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -18,8 +17,21 @@ const { guardRail } = config;
 
 // Create LLMManager instance
 const llmManager = new LLMManager();
-// Create InMemoryStore instance for managing documents and analysis results with TTL and max entry limits to optimize memory usage and ensure timely cleanup of stale data.
+// Create InMemoryStore instance to validate the
+// received document text length and page count
+// are within acceptable limits to prevent processing
+// of excessively large documents.
 const inMemoryStore = new InMemoryStore();
+// Variables to hold document text, validation status, and analysis results in memory for quick access during the request lifecycle.
+let documentText = '';
+let isDocumentValid = false;
+let analysisData = null;
+// Clear document and analysis data.
+const cleanupData = () => {
+  documentText = '';
+  isDocumentValid = false;
+  analysisData = null;
+}
 
 export default function registerHandlers(app) {
   // Initialize LangChain on startup
@@ -39,31 +51,41 @@ export default function registerHandlers(app) {
   // Endpoint to receive document text from client
   app.post('/api/send-text', async (request, response) => {
     try {
-      const { documentText } = request.body;
-
-      if (!documentText) {
-        return response.status(400).json({
-          error: 'No document text provided',
+      if (!llmManager.isInitialized()) {
+        return response.status(200).json({
+          error: 'LangChain not available or missing OPENAI_API_KEY in .env file.',
           success: false
         });
       }
 
-      // Generate unique document ID
-      const documentId = `doc_${Date.now()}_${randomBytes(9).toString('base64url')}`;
-
-      // Store raw document text in memory with associated metadata such as text length.
-      // This allows for later retrieval and analysis while optimizing memory usage by not retaining the raw text longer than necessary.
-      inMemoryStore.storeDocument(documentId, documentText);
-
-      response.json({
-        success: true,
-        message: 'Document text received successfully',
-        documentId: documentId,
-        textLength: documentText.length,
-        receivedAt: new Date().toISOString()
-      });
+      const state = inMemoryStore.isValidDocument(request.body.documentText.trim(), request.body.pageCount);
+      switch (state) {
+        case 0:
+          return response.status(200).json({
+            error: 'Document text is empty.',
+            success: false
+          });
+        case 1:
+          return response.status(200).json({
+            error: `Document text size exceeds ${InMemoryStore.MAX_DOCUMENT_LENGTH} characters limit.`,
+            success: false
+          });
+        case 2:
+          return response.status(200).json({
+            error: `Document pages number exceeds ${InMemoryStore.ALLOWED_PAGES} pages limit.`,
+            success: false
+          });
+        default:
+          documentText = request.body.documentText.trim();
+          isDocumentValid = true;
+          response.json({
+            message: 'Document text received successfully.',
+            success: true
+          });
+      }
     } catch (error) {
       console.error('Error receiving document text:', error);
+      cleanupData();
       response.status(500).json({
         error: 'Failed to receive document text',
         details: error.message,
@@ -75,55 +97,35 @@ export default function registerHandlers(app) {
   // Endpoint to analyze document for PII
   app.post('/api/analyze-pii', async (request, response) => {
     try {
-      const { documentId } = request.body;
-
-      if (!documentId) {
-        return response.status(400).json({
-          error: 'No document ID provided',
-          success: false
-        });
-      }
-
-      // Retrieve document from storage
-      const document = inMemoryStore.getDocument(documentId);
-      if (!document) {
-        return response.status(404).json({
-          error: 'Document not found',
-          success: false
-        });
-      }
-
       // Check if LangChain is ready for AI processing
-      if (!llmManager.isInitialized())
+      if (!llmManager.isInitialized()) {
+        cleanupData();
         return response.status(500).json({
-          error: 'LangChain not available. Please check server configuration.'
+          error: 'LangChain not available. Please check server configuration.',
+          success: false
         });
+      }
+
+      // Check if document is valid before analysis
+      if (!isDocumentValid) {
+        cleanupData();
+        return response.status(400).json({
+          error: 'Invalid document. Please check the document text and page count.',
+          success: false
+        });
+      }
 
       // AI processing with LangChain for PII detection
-      const humanMessage = new HumanMessage(document.text);
-      const aiResult = await llmManager.executeMessages([systemMessage, humanMessage]);
-
-      // Store analysis results
-      const analysisData = {
-        success: true,
-        message: 'Document analyzed successfully with AI',
-        documentId: documentId,
-        aiProcessing: true,
-        analyzedAt: new Date().toISOString(),
-        analysis: aiResult
-      };
-
-      // Store analysis results in memory and release raw document text to optimize memory usage
-      inMemoryStore.storeAnalysis(documentId, analysisData);
+      const humanMessage = new HumanMessage(documentText);
+      analysisData = await llmManager.executeMessages([systemMessage, humanMessage]);
 
       response.json({
         success: true,
-        message: 'PII analysis completed',
-        documentId: documentId,
-        analyzedAt: new Date().toISOString()
+        message: 'PII analysis completed'
       });
     } catch (error) {
       console.error('Error analyzing document for PII:', error);
+      cleanupData();
       response.status(500).json({
         error: 'Failed to analyze document for PII',
         details: error.message,
@@ -133,28 +135,19 @@ export default function registerHandlers(app) {
   });
 
   // Endpoint to send results back to client
-  app.get('/api/get-results/:documentId', async (request, response) => {
+  app.get('/api/get-results', async (request, response) => {
     try {
-      const { documentId } = request.params;
-
-      if (!documentId) {
-        return response.status(400).json({
-          error: 'No document ID provided',
+      // Check if analysis data is available
+      if (!analysisData)
+        return response.status(200).json({
+          error: 'No analysis results found. Please analyze the document first.',
           success: false
         });
-      }
 
-      // Retrieve analysis results from storage
-      const results = inMemoryStore.getAnalysis(documentId);
-      if (!results) {
-        return response.status(404).json({
-          error: 'Analysis results not found',
-          success: false,
-          message: 'Document may not have been analyzed yet or analysis failed'
-        });
-      }
-
-      response.json(results);
+      response.status(200).json({
+        success: true,
+        analysis: analysisData
+      });
     } catch (error) {
       console.error('Error retrieving analysis results:', error);
       response.status(500).json({
@@ -162,6 +155,10 @@ export default function registerHandlers(app) {
         details: error.message,
         success: false
       });
+    }
+    finally {
+      // Clear document and analysis data after sending results
+      cleanupData();
     }
   });
 }

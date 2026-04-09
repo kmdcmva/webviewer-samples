@@ -9,12 +9,9 @@ const sendTextToServer = async () => {
       },
       body: JSON.stringify({
         documentText: globalThis.loadedDocument?.text ?? '',
-        timestamp: new Date().toISOString()
+        pageCount: globalThis.loadedDocument?.pageCount ?? 0
       }),
     });
-
-    if (!response.ok)
-      throw new Error(`Server error: ${response.status} ${response.statusText}`);
 
     return await response.json();
   } catch (error) {
@@ -24,17 +21,13 @@ const sendTextToServer = async () => {
 }
 
 // Analyze the loaded document text for personal information identification (PII)
-const analyzeDocument = async (documentId) => {
+const analyzeDocument = async () => {
   try {
     const response = await fetch('/api/analyze-pii', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({
-        documentId: documentId,
-        timestamp: new Date().toISOString()
-      }),
     });
 
     if (!response.ok)
@@ -48,9 +41,9 @@ const analyzeDocument = async (documentId) => {
 }
 
 // Receive analysis result from the server
-const getAnalysisResult = async (documentId) => {
+const getAnalysisResult = async () => {
   try {
-    const response = await fetch(`/api/get-results/${documentId}`, {
+    const response = await fetch('/api/get-results', {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
@@ -68,24 +61,38 @@ const getAnalysisResult = async (documentId) => {
 }
 
 const analyzeDocumentForPII = async () => {
-  // Show WebViewer loading spinner
-  WebViewer.getInstance().UI.openElements('loadingModal');
   try {
+    // Show WebViewer loading spinner
+    WebViewer.getInstance().UI.openElements('loadingModal');
+
     // Step 1: Send document text to server
-    const sendResult = await sendTextToServer();
-    const documentId = sendResult.documentId;
+    let response = await sendTextToServer();
+    if (!response.success) {
+      alert(response.error);
+      return false;
+    }
 
     // Step 2: Analyze document for PII
-    await analyzeDocument(documentId);
+    response = await analyzeDocument();
+    if (!response.success)
+      return false;
 
     // Step 3: Get analysis result from server
-    globalThis.aiAnalysisResult = await getAnalysisResult(documentId);
+    globalThis.aiAnalysisResult = await getAnalysisResult();
+    if (!globalThis.aiAnalysisResult.success) {
+      alert('No PII result found.');
+      return false;
+    }
+
+    return true;
   } catch (error) {
     console.error('Failed to analyze document:', error);
+    return false;
   }
-
-  // Hide WebViewer loading spinner
-  WebViewer.getInstance().UI.closeElements('loadingModal');
+  finally {
+    // Hide WebViewer loading spinner
+    WebViewer.getInstance().UI.closeElements('loadingModal');
+  }
 }
 
 export { analyzeDocumentForPII };

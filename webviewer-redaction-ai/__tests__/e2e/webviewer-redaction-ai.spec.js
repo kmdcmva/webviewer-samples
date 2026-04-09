@@ -5,6 +5,16 @@
 import { test, expect } from '@playwright/test';
 import { MOCK_DATA, registerApiRouteMocks } from '../../__mocks__/webviewer-redaction-ai.mock.js';
 
+let mockCalls = null;
+
+// Before each test, we set up the API route mocks to intercept and
+// simulate backend responses for the AI PII redaction workflow.
+// This allows us to test the UI interactions and logic without
+// relying on actual backend services.
+test.beforeEach(async ({ page }) => {
+  mockCalls = await registerApiRouteMocks(page);
+});
+
 const normalizeMultilineText = (value) =>
   (value || '')
     .split('\n')
@@ -13,7 +23,7 @@ const normalizeMultilineText = (value) =>
     .join('\n');
 
 // Validating that the AI PII redaction tool button exists in the DOM.
-test('Validate AI PII redaction tool button exists in DOM', async ({ page }) => {
+test('PII redaction tool button visibility', async ({ page }) => {
   // Go to the app page (adjust the URL if needed)
   await page.goto('/client/index.html');
 
@@ -27,9 +37,7 @@ test('Validate AI PII redaction tool button exists in DOM', async ({ page }) => 
 });
 
 // Applying AI PII redaction with mocked endpoint responses.
-test('Perform AI PII redaction', async ({ page }) => {
-  const mockCalls = await registerApiRouteMocks(page);
-
+test('Perform AI PII redaction for document text size and page count within limits', async ({ page }) => {
   await page.goto('/client/index.html');
 
   // Click the Redact tab to activate the Redact toolbar group.
@@ -39,6 +47,16 @@ test('Perform AI PII redaction', async ({ page }) => {
   await expect.poll(
     () => page.evaluate(() => globalThis.loadedDocument?.text || '')
   ).toContain('Peady, Eff, & Wright Exporting');
+
+  // Ensure full document text length/size is within limits before triggering analysis requests.
+  await expect.poll(
+    () => page.evaluate(() => globalThis.loadedDocument?.text.length || 0)
+  ).toBeLessThanOrEqual(30000);
+
+  // Ensure page count is within limits before triggering analysis requests.
+  await expect.poll(
+    () => page.evaluate(() => globalThis.loadedDocument?.pageCount || 0)
+  ).toBeLessThanOrEqual(20);
 
   // Trigger analyzeDocumentForPII + applyRedactions through the UI button.
   const pIIBtn = page.locator('button[data-element="AIPIIRedactionToolButton"]');
@@ -51,7 +69,6 @@ test('Perform AI PII redaction', async ({ page }) => {
   await expect.poll(() => normalizeMultilineText(mockCalls.sendTextPayload?.documentText)).toBe(
     normalizeMultilineText(MOCK_DATA.documentText)
   );
-  await expect.poll(() => mockCalls.analyzePIIPayload?.documentId).toBe(MOCK_DATA.documentId);
 
   // Complete the redaction flow and assert it closes cleanly.
   const redactAllBtn = page.locator('button[data-element="redactAllMarkedButton"]');
@@ -68,53 +85,90 @@ test('Perform AI PII redaction', async ({ page }) => {
   await expect.poll(() => page.evaluate(() => globalThis.aiAnalysisResult?.analysis)).toBe(MOCK_DATA.analysisText);
 });
 
-// Validate server-side in-memory lifecycle.
-// This test assumes analyzing a document twice.
-// The first analysis should succeed.
-// The second should fail with a 404 error,
-// indicating that the raw document was released from memory after the first analysis.
-test('In-memory store releases raw document after analysis', async ({ request }) => {
+// Expect an alert when analysis completes but /api/get-results returns no PII findings.
+test('Expect an alert when loaded document has no identifiable PII', async ({ page }) => {
+  await page.goto('/client/index.html');
 
-  // First analysis that should succeed.
-  const documentText = 'Customer Jane Doe\nEmail jane.doe@example.com\nPhone 123-456-7890';
+  // Click the Redact tab to activate the Redact toolbar group.
+  await page.locator('button[data-element="toolbarGroup-Redact"]').click();
 
-  const sendTextResponse = await request.post('/api/send-text', {
-    data: { documentText }
+  // Wait until document wrapper is initialized before replacing the loaded text.
+  await expect.poll(() => page.evaluate(() => Boolean(globalThis.loadedDocument))).toBe(true);
+
+  const noPIIText = 'Quarterly operations summary for warehouse inventory and packaging materials.';
+  await page.evaluate((text) => {
+    globalThis.loadedDocument.text = text;
+    globalThis.loadedDocument.pageCount = 1;
+  }, noPIIText);
+
+  let getResultsCalls = 0;
+  await page.unroute('**/api/get-results');
+  await page.route('**/api/get-results', async (route) => {
+    getResultsCalls += 1;
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        success: false,
+        error: 'No analysis results found. Please analyze the document first.'
+      })
+    });
   });
 
-  expect(sendTextResponse.ok()).toBeTruthy();
-  const sendTextBody = await sendTextResponse.json();
-  expect(sendTextBody.success).toBe(true);
-  expect(sendTextBody.textLength).toBe(documentText.length);
-  expect(typeof sendTextBody.documentId).toBe('string');
-  expect(sendTextBody.documentId.length).toBeGreaterThan(0);
+  // Trigger analyzeDocumentForPII through the UI button and verify the alert content.
+  const pIIBtn = page.locator('button[data-element="AIPIIRedactionToolButton"]');
+  const alertPromise = page.waitForEvent('dialog');
+  await pIIBtn.click();
+  const alertDialog = await alertPromise;
+  expect(alertDialog.message()).toBe('No PII result found.');
+  await alertDialog.accept();
 
-  const { documentId } = sendTextBody;
+  // Ensure the no-PII document text was submitted and the flow reached /api/get-results.
+  await expect.poll(() => mockCalls.sendText).toBe(1);
+  await expect.poll(() => mockCalls.analyzePII).toBe(1);
+  await expect.poll(() => getResultsCalls).toBe(1);
+  await expect.poll(() => normalizeMultilineText(mockCalls.sendTextPayload?.documentText)).toBe(noPIIText);
+});
 
-  const analyzeResponse = await request.post('/api/analyze-pii', {
-    data: { documentId }
+// Expect an alert when document text/pages values exceed limits.
+test('Expect an alert when document text exceeds 30000 characters with page count above 20', async ({ page }) => {
+  await page.goto('/client/index.html');
+
+  // Click the Redact tab to activate the Redact toolbar group.
+  await page.locator('button[data-element="toolbarGroup-Redact"]').click();
+
+  // Wait until document wrapper is initialized before mutating fields.
+  await expect.poll(() => page.evaluate(() => Boolean(globalThis.loadedDocument))).toBe(true);
+
+  await page.evaluate(() => {
+    globalThis.loadedDocument.text = 'A'.repeat(30001);
+    globalThis.loadedDocument.pageCount = 21;
   });
-  
-  expect(analyzeResponse.ok()).toBeTruthy();
-  const analyzeBody = await analyzeResponse.json();
-  expect(analyzeBody.success).toBe(true);
-  expect(analyzeBody.documentId).toBe(documentId);
-  
-  const resultsResponse = await request.get(`/api/get-results/${documentId}`);
-  expect(resultsResponse.ok()).toBeTruthy();
-  const resultsBody = await resultsResponse.json();
-  expect(resultsBody.success).toBe(true);
-  expect(resultsBody.documentId).toBe(documentId);
-  expect(typeof resultsBody.analysis).toBe('string');
 
-
-  // Second analysis that should fail with 404, confirming the document was released from memory.
-  const analyzeAgainResponse = await request.post('/api/analyze-pii', {
-    data: { documentId }
+  let sendTextCalls = 0;
+  await page.unroute('**/api/send-text');
+  await page.route('**/api/send-text', async (route) => {
+    sendTextCalls += 1;
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        success: false,
+        error: 'Document text size exceeds 30000 characters limit.'
+      })
+    });
   });
 
-  expect(analyzeAgainResponse.status()).toBe(404);
-  const analyzeAgainBody = await analyzeAgainResponse.json();
-  expect(analyzeAgainBody.success).toBe(false);
-  expect(analyzeAgainBody.error).toBe('Document not found');
+  // Trigger analyzeDocumentForPII through the UI button and verify the alert content.
+  const pIIBtn = page.locator('button[data-element="AIPIIRedactionToolButton"]');
+  const alertPromise = page.waitForEvent('dialog');
+  await pIIBtn.click();
+  const alertDialog = await alertPromise;
+  expect(alertDialog.message()).toBe('Document text size exceeds 30000 characters limit.');
+  await alertDialog.accept();
+
+  // Ensure request flow stops at /api/send-text when request validation fails.
+  await expect.poll(() => sendTextCalls).toBe(1);
+  await expect.poll(() => mockCalls.analyzePII).toBe(0);
+  await expect.poll(() => mockCalls.getResults).toBe(0);
 });

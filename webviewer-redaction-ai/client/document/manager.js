@@ -7,12 +7,14 @@ class DocumentManager {
   #instance;
   text;
   #isValid;
+  pageCount;
 
   constructor(documentViewer) {
     this.#documentViewer = documentViewer;
     this.#instance = null;
     this.text = '';
     this.#isValid = true;
+    this.pageCount = 0;
   }
 
   async initialize() {
@@ -22,10 +24,10 @@ class DocumentManager {
       console.error('Failed to initialize document manager.');
       return;
     }
-    const pageCount = this.#instance.getPageCount();
+    this.pageCount = this.#instance.getPageCount();
     await this.#instance.getDocumentCompletePromise().then(async () => {
       // Load full document text
-      for (let pageIndex = 1; pageIndex <= pageCount; pageIndex++) {
+      for (let pageIndex = 1; pageIndex <= this.pageCount; pageIndex++) {
         try {
           const pageText = await this.#instance.loadPageText(pageIndex);
           this.text += `${pageText}\n`;
