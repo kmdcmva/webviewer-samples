@@ -62,6 +62,9 @@ const getAnalysisResult = async () => {
 
 const analyzeDocumentForPII = async () => {
   try {
+    // Clear any existing AI-generated redactions before applying new ones
+    clearAIRedactions();
+
     // Show WebViewer loading spinner
     WebViewer.getInstance().UI.openElements('loadingModal');
 
@@ -93,6 +96,20 @@ const analyzeDocumentForPII = async () => {
     // Hide WebViewer loading spinner
     WebViewer.getInstance().UI.closeElements('loadingModal');
   }
+}
+
+// Function to clear all AI-generated redaction annotations
+const clearAIRedactions = () => {
+  const { annotationManager, Annotations } = WebViewer.getInstance().Core;
+  // Get all redaction annotations with 'AI Redaction' Author
+  const redactionList = annotationManager.getAnnotationsList().filter(
+    annot => annot instanceof Annotations.RedactionAnnotation && annot.Author === 'AI Redaction'
+  );
+
+  // Delete each matching redaction annotation
+  redactionList.forEach(redaction => {
+    annotationManager.deleteAnnotation(redaction, true);
+  });
 }
 
 export { analyzeDocumentForPII };
