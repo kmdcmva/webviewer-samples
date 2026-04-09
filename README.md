@@ -52,7 +52,6 @@ Samples showing how to get started with WebViewer in different environments.
 ### 3rd Party Integrations
 Samples showing how to integrate and use WebViewer in 3rd party platforms.
 
-- [webviewer-ask-ai](./webviewer-ask-ai) - Integrate WebViewer with Artificial Intelligence
 - [webviewer-salesforce](./webviewer-salesforce) - Integrate WebViewer in Salesforce
 - [webviewer-salesforce-attachments](./webviewer-salesforce-attachments) - View Salesforce record attachments in WebViewer
 - [webviewer-mendix](./webviewer-mendix) - Integrate WebViewer into a Mendix low-code app
@@ -79,4 +78,10 @@ Samples showing how to use various WebViewer features.
 - [webviewer-barcode](./webviewer-barcode) - Barcode generation with WebViewer
 - [webviewer-range-request](./webviewer-range-request) - Setup range requests on the backend server for loading linearized PDFs in the WebViewer
 - [webviewer-react-canvasToPDF](./webviewer-react-canvasToPDF) - Export a canvas to PDF with WebViewer
+
+### Artificial Intelligence
+Samples showing how to integrate WebViewer with Artificial Intelligence.
+
+- [webviewer-ask-ai](./webviewer-ask-ai) - Enable chat-based Q&A, document and selected-text summarization, keyword extraction, and contextual prompts that lets users ask questions about their PDFs
+- [webviewer-redaction-ai](./webviewer-redaction-ai) - Identify and apply redaction of the personal information in the provided PDF
 

@@ -1,0 +1,164 @@
+import { HumanMessage, SystemMessage } from '@langchain/core/messages';
+import LLMManager from './llmManager.js';
+import InMemoryStore from './inMemoryStore.js';
+import dotenv from 'dotenv';
+import { readFileSync } from 'node:fs';
+import { join, dirname } from 'node:path';
+import { fileURLToPath } from 'node:url';
+
+dotenv.config();
+
+// Load configuration
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+const configPath = join(__dirname, './config.json');
+const config = JSON.parse(readFileSync(configPath, 'utf8'));
+const { guardRail } = config;
+
+// Create LLMManager instance
+const llmManager = new LLMManager();
+// Create InMemoryStore instance to validate the
+// received document text length and page count
+// are within acceptable limits to prevent processing
+// of excessively large documents.
+const inMemoryStore = new InMemoryStore();
+// Variables to hold document text, validation status, and analysis results in memory for quick access during the request lifecycle.
+let documentText = '';
+let isDocumentValid = false;
+let analysisData = null;
+// Clear document and analysis data.
+const cleanupData = () => {
+  documentText = '';
+  isDocumentValid = false;
+  analysisData = null;
+}
+
+export default function registerHandlers(app) {
+  // Initialize LangChain on startup
+  llmManager.initialize();
+
+  // Prepare assistant prompt with PII classifications and guardrail rules
+  let prepareAssistantPrompt = (guardRail) => {
+    let prompt = guardRail.assistantPrompt.replace('PIICLASSIFICATIONSPLACEHOLDER', guardRail.piiClassifications.flatMap(item => item.details).join(', '));
+    prompt += guardRail.rulesSet.map(rule => `${rule}`).join(' ');
+    return prompt;
+  };
+
+  // Create system prompt message
+  let systemMessage = prepareAssistantPrompt(guardRail);
+  systemMessage = new SystemMessage(systemMessage);
+
+  // Endpoint to receive document text from client
+  app.post('/api/send-text', async (request, response) => {
+    try {
+      if (!llmManager.isInitialized()) {
+        return response.status(200).json({
+          error: 'LangChain not available or missing OPENAI_API_KEY in .env file.',
+          success: false
+        });
+      }
+
+      const state = inMemoryStore.isValidDocument(request.body.documentText.trim(), request.body.pageCount);
+      switch (state) {
+        case 0:
+          return response.status(200).json({
+            error: 'Document text is empty.',
+            success: false
+          });
+        case 1:
+          return response.status(200).json({
+            error: `Document text size exceeds ${InMemoryStore.MAX_DOCUMENT_LENGTH} characters limit.`,
+            success: false
+          });
+        case 2:
+          return response.status(200).json({
+            error: `Document pages number exceeds ${InMemoryStore.ALLOWED_PAGES} pages limit.`,
+            success: false
+          });
+        default:
+          documentText = request.body.documentText.trim();
+          isDocumentValid = true;
+          response.json({
+            message: 'Document text received successfully.',
+            success: true
+          });
+      }
+    } catch (error) {
+      console.error('Error receiving document text:', error);
+      cleanupData();
+      response.status(500).json({
+        error: 'Failed to receive document text',
+        details: error.message,
+        success: false
+      });
+    }
+  });
+
+  // Endpoint to analyze document for PII
+  app.post('/api/analyze-pii', async (request, response) => {
+    try {
+      // Check if LangChain is ready for AI processing
+      if (!llmManager.isInitialized()) {
+        cleanupData();
+        return response.status(500).json({
+          error: 'LangChain not available. Please check server configuration.',
+          success: false
+        });
+      }
+
+      // Check if document is valid before analysis
+      if (!isDocumentValid) {
+        cleanupData();
+        return response.status(400).json({
+          error: 'Invalid document. Please check the document text and page count.',
+          success: false
+        });
+      }
+
+      // AI processing with LangChain for PII detection
+      const humanMessage = new HumanMessage(documentText);
+      analysisData = await llmManager.executeMessages([systemMessage, humanMessage]);
+
+      response.json({
+        success: true,
+        message: 'PII analysis completed'
+      });
+    } catch (error) {
+      console.error('Error analyzing document for PII:', error);
+      cleanupData();
+      response.status(500).json({
+        error: 'Failed to analyze document for PII',
+        details: error.message,
+        success: false
+      });
+    }
+  });
+
+  // Endpoint to send results back to client
+  app.get('/api/get-results', async (request, response) => {
+    try {
+      // Check if analysis data is available
+      if (!analysisData)
+        return response.status(200).json({
+          error: 'No analysis results found. Please analyze the document first.',
+          success: false
+        });
+
+      response.status(200).json({
+        success: true,
+        analysis: analysisData
+      });
+    } catch (error) {
+      console.error('Error retrieving analysis results:', error);
+      response.status(500).json({
+        error: 'Failed to retrieve analysis results',
+        details: error.message,
+        success: false
+      });
+    }
+    finally {
+      // Clear document and analysis data after sending results
+      cleanupData();
+    }
+  });
+}
