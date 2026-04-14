@@ -7,10 +7,6 @@ Add an AI-powered assistant to WebViewer, detect Personally Identifiable Informa
 - [WebViewer Documentation](https://docs.apryse.com/web/guides/get-started)
 - [WebViewer Demo](https://showcase.apryse.com/)
 
-<video width="100%" autoplay loop muted playsinline>
-  <source src="./sample.mp4" type="video/mp4">
-</video>
-
 ## Get Started
 
 A license key is required to run WebViewer. You can obtain a trial key in our [get started guides](https://docs.apryse.com/web/guides/get-started), or by signing-up on our [developer portal](https://dev.apryse.com/).
