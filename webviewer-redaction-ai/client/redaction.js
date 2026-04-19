@@ -65,6 +65,8 @@ const applyRedactions = async () => {
             });
 
             redactAnnot.Author = "AI Redaction";
+            redactAnnot.OverlayText = classification;
+            redactAnnot.FontSize = '10pt';
             redactAnnot.setContents(classification);
             redactAnnot.setCustomData('trn-annot-preview', documentViewer.getSelectedText(redactAnnot.PageNumber));
 
