@@ -4,7 +4,7 @@
     "piiClassifications": [
       {
         "classification": "personal",
-        "details": ["person names"]
+        "details": ["person names (middle initials may be included)"]
       },
       {
         "classification": "contact",
