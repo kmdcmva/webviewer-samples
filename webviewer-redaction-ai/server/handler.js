@@ -32,6 +32,13 @@ const cleanupData = () => {
   isDocumentValid = false;
   analysisData = null;
 }
+// Validate analysis data contains results before sending it back to the client.
+const isValidAnalysis = () => {
+  return !(analysisData === null ||
+    analysisData.length === 0 ||
+    analysisData.includes('No personal information'));
+};
+
 
 export default function registerHandlers(app) {
   // Initialize LangChain on startup
@@ -137,12 +144,14 @@ export default function registerHandlers(app) {
   // Endpoint to send results back to client
   app.get('/api/get-results', async (request, response) => {
     try {
-      // Check if analysis data is available
-      if (!analysisData)
+      // Check if analysis data is valid
+      const validAnalysis = isValidAnalysis();
+      if (!validAnalysis) {
         return response.status(200).json({
           error: 'No analysis results found. Please analyze the document first.',
           success: false
         });
+      }
 
       response.status(200).json({
         success: true,
