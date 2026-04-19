@@ -1,3 +1,8 @@
+function removeLeadingNumbering(text) {
+  const pattern = /^\s*(?:(?:\d+|[IVXLCDM]+)[)\-–—]*|[•*·\-–—])\s*/i;
+  return text.replace(pattern, '');
+}
+
 // Function to create redaction annotations from AI analysis results
 const applyRedactions = async () => {
   const { documentViewer, Search, annotationManager, Annotations } = WebViewer.getInstance().Core;
@@ -33,7 +38,12 @@ const applyRedactions = async () => {
 
   // Search for PII entities then create redactions
   let searchOptions = null;
-  for (const searchText of piiEntities) {
+  for (const piiEntity of piiEntities) {
+    
+    const classifiedPIIEntity = piiEntity.split(":").map(part => part.trim());
+    const classification = removeLeadingNumbering(classifiedPIIEntity[0]);
+    const pii = classifiedPIIEntity[1];
+
     await new Promise((resolve) => {
       searchOptions = {
         // search the entire document
@@ -55,7 +65,7 @@ const applyRedactions = async () => {
             });
 
             redactAnnot.Author = "AI Redaction";
-            redactAnnot.setContents("Redacted PII");
+            redactAnnot.setContents(classification);
             redactAnnot.setCustomData('trn-annot-preview', documentViewer.getSelectedText(redactAnnot.PageNumber));
 
             // Apply and redraw the redaction annotation
@@ -65,7 +75,7 @@ const applyRedactions = async () => {
         },
       };
 
-      documentViewer.textSearchInit(searchText, searchMode, searchOptions);
+      documentViewer.textSearchInit(pii, searchMode, searchOptions);
     });
   }
 };
