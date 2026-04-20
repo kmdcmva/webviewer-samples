@@ -69,15 +69,15 @@ const analyzeDocumentForPII = async () => {
     WebViewer.getInstance().UI.openElements('loadingModal');
 
     // Step 1: Send document text to server
-    let response = await sendTextToServer();
-    if (!response.success) {
-      alert(response.error);
+    globalThis.aiAnalysisResult = await sendTextToServer();
+    if (!globalThis.aiAnalysisResult.success) {
+      alert(globalThis.aiAnalysisResult.error);
       return false;
     }
 
     // Step 2: Analyze document for PII
-    response = await analyzeDocument();
-    if (!response.success)
+    globalThis.aiAnalysisResult = await analyzeDocument();
+    if (!globalThis.aiAnalysisResult.success)
       return false;
 
     // Step 3: Get analysis result from server

@@ -39,21 +39,21 @@ const isValidAnalysis = () => {
     analysisData.includes('No personal information'));
 };
 
-
 export default function registerHandlers(app) {
   // Initialize LangChain on startup
   llmManager.initialize();
 
-  // Prepare assistant prompt with PII classifications and guardrail rules
-  let prepareAssistantPrompt = (guardRail) => {
-    let prompt = guardRail.assistantPrompt.replace('PIICLASSIFICATIONSPLACEHOLDER', guardRail.piiClassifications.flatMap(item => item.details).join(', '));
+  // Prepare system prompt with PII classifications and guardrail rules
+  let prepareSystemPrompt = (guardRail) => {
+    let compiledClassificationDetails = guardRail.piiClassifications.flatMap(item => item.details).join(', ');
+    let prompt = guardRail.systemPrompt.replace('PIICLASSIFICATIONSPLACEHOLDER', compiledClassificationDetails);
     prompt += guardRail.rulesSet.map(rule => `${rule}`).join(' ');
     return prompt;
   };
 
   // Create system prompt message
-  let systemMessage = prepareAssistantPrompt(guardRail);
-  systemMessage = new SystemMessage(systemMessage);
+  const systemPrompt = prepareSystemPrompt(guardRail);
+  const systemMessage = new SystemMessage(systemPrompt);
 
   // Endpoint to receive document text from client
   app.post('/api/send-text', async (request, response) => {
@@ -148,6 +148,7 @@ export default function registerHandlers(app) {
       const validAnalysis = isValidAnalysis();
       if (!validAnalysis) {
         return response.status(200).json({
+          analysis: analysisData,
           error: 'No analysis results found. Please analyze the document first.',
           success: false
         });
@@ -170,4 +171,21 @@ export default function registerHandlers(app) {
       cleanupData();
     }
   });
+
+  // Endpoint to provide configuration data to client
+  app.get('/api/config', (request, response) => {
+    response.json({
+      llmModel: process.env.OPENAI_MODEL || 'unknown',
+      prompt: formatSystemPrompt(guardRail) || 'No system message configured.'
+    });
+  });
+
+  let formatSystemPrompt = (guardRail) => {
+    let compiledClassificationDetails = guardRail.piiClassifications.flatMap(item => item.details.map(detail => `\n- ${detail}`)).join('');
+    let formattedPrompt = guardRail.systemPrompt.replace('PIICLASSIFICATIONSPLACEHOLDER', compiledClassificationDetails);
+    let placeHolderText = 'Consider applying the following rules:';
+    formattedPrompt = formattedPrompt.replace(placeHolderText, `\n\n${placeHolderText}`);
+    formattedPrompt += guardRail.rulesSet.map(rule => `\n${rule}`).join('\n');
+    return formattedPrompt;
+  };
 }

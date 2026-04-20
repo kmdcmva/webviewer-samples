@@ -1,6 +1,6 @@
 {
   "guardRail": {
-    "assistantPrompt": "Extract the following information: PIICLASSIFICATIONSPLACEHOLDER. Consider applying the following rules: ",
+    "systemPrompt": "Extract the following information: PIICLASSIFICATIONSPLACEHOLDER. Consider applying the following rules: ",
     "piiClassifications": [
       {
         "classification": "personal",

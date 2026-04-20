@@ -37,6 +37,16 @@
       "reason": ""
     },
     {
+      "path": "ApryseSDK/webviewer-samples/refs/heads/main/webviewer-redaction-ai/client/ui/aiPanel.js",
+      "description": "",
+      "reason": ""
+    },
+    {
+      "path": "ApryseSDK/webviewer-samples/refs/heads/main/webviewer-redaction-ai/client/ui/styles.css",
+      "description": "",
+      "reason": ""
+    },
+    {
       "path": "ApryseSDK/webviewer-samples/refs/heads/main/webviewer-redaction-ai/server/config.json",
       "description": "",
       "reason": ""
