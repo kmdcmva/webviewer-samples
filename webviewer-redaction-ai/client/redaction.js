@@ -39,10 +39,17 @@ const applyRedactions = async () => {
   // Search for PII entities then create redactions
   let searchOptions = null;
   for (const piiEntity of piiEntities) {
-    
-    const classifiedPIIEntity = piiEntity.split(":").map(part => part.trim());
-    const classification = removeLeadingNumbering(classifiedPIIEntity[0]);
-    const pii = classifiedPIIEntity[1];
+
+    const separatorIndex = piiEntity.indexOf(':');
+    if (separatorIndex === -1)
+      continue;
+
+    let classification = piiEntity.slice(0, separatorIndex).trim();
+    const pii = piiEntity.slice(separatorIndex + 1).trim();
+    if (classification === '' || pii === '')
+      continue;
+
+    classification = removeLeadingNumbering(classification);
 
     await new Promise((resolve) => {
       searchOptions = {

@@ -36,10 +36,9 @@ test('PII redaction tool button visibility', async ({ page }) => {
   await expect(component).toBeVisible();
 });
 
-// Validating that the AI Panel appears after
-// clicking the AI PII redaction tool button
-// and that the mocked API workflow is executed.
-test('AI Panel visibility', async ({ page }) => {
+// Test the AI panel is rendering the expected results after clicking
+// the AI PII redaction tool button and completing the mocked workflow.
+test('AI Panel renders the expected results', async ({ page }) => {
   await page.goto('/client/index.html');
 
   // Click the Redact tab to activate the Redact toolbar group.
@@ -152,7 +151,7 @@ test('Expect an alert when loaded document has no identifiable PII', async ({ pa
       contentType: 'application/json',
       body: JSON.stringify({
         success: false,
-        error: 'No analysis results found. Please analyze the document first.'
+        error: 'No analysis results found.'
       })
     });
   });

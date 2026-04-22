@@ -62,7 +62,7 @@ To swap to another chat model:
 1. Replace `@langchain/openai` in [package.json](https://github.com/ApryseSDK/webviewer-samples/blob/main/webviewer-redaction-ai/package.json#L23) by the appropriate chat model package. For example:
 
    - **Anthropic**: `@langchain/anthropic`
-   - **Google Gemini**: `@langchain/google`.
+   - **Google Gemini**: `@langchain/google`
 
 2. Replace the credentials in the `.env` by the appropriate ones of the chat model intend to use. For example:
 
@@ -72,7 +72,7 @@ To swap to another chat model:
 3. Replace `ChatOpenAI` wrapper class in `server/llmManager.js` file by the appropriate class of the chat model intend to use. For example:
 
    - **Anthropic**: `ChatAnthropic`
-   - **Google Gemini**: `ChatGoogle`.
+   - **Google Gemini**: `ChatGoogle`
 
    This will take place in two lines:
 
@@ -81,6 +81,6 @@ To swap to another chat model:
 
 ## Architecture
 
-The sample application follows a client–server architecture. It starts a backend server that hosts and manages the OpenAI chat model integration, while exposing a WebViewer client accessible at http://localhost:4040/client/index.
+The sample application follows a client–server architecture. It starts a backend server that hosts and manages the OpenAI chat model integration, while exposing a WebViewer client accessible at http://localhost:4040/client/index.html.
 
 This architecture enables the application to enforce security best practices by handling sensitive operations—such as API key management and OpenAI interactions—exclusively on the server side. As a result, confidential credentials are never exposed to the client, significantly reducing security risks and ensuring proper access control.

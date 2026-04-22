@@ -149,7 +149,7 @@ export default function registerHandlers(app) {
       if (!validAnalysis) {
         return response.status(200).json({
           analysis: analysisData,
-          error: 'No analysis results found. Please analyze the document first.',
+          error: 'No analysis results found.',
           success: false
         });
       }
@@ -174,10 +174,17 @@ export default function registerHandlers(app) {
 
   // Endpoint to provide configuration data to client
   app.get('/api/config', (request, response) => {
-    response.json({
-      llmModel: process.env.OPENAI_MODEL || 'unknown',
-      prompt: formatSystemPrompt(guardRail) || 'No system message configured.'
-    });
+    const configResponse = {
+      llmModel: 'Unauthorized access to LLM model configuration.',
+      prompt: 'Unauthorized access to system prompt.'
+    };
+
+    if (process.env.EXPOSE_CONFIGURATION === 'true') {
+      configResponse.llmModel = process.env.OPENAI_MODEL;
+      configResponse.prompt = formatSystemPrompt(guardRail);
+    }
+    
+    response.json(configResponse);
   });
 
   let formatSystemPrompt = (guardRail) => {
