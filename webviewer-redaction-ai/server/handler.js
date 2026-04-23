@@ -32,21 +32,28 @@ const cleanupData = () => {
   isDocumentValid = false;
   analysisData = null;
 }
+// Validate analysis data contains results before sending it back to the client.
+const isValidAnalysis = () => {
+  return !(analysisData === null ||
+    analysisData.length === 0 ||
+    analysisData.includes('No personal information'));
+};
 
 export default function registerHandlers(app) {
   // Initialize LangChain on startup
   llmManager.initialize();
 
-  // Prepare assistant prompt with PII classifications and guardrail rules
-  let prepareAssistantPrompt = (guardRail) => {
-    let prompt = guardRail.assistantPrompt.replace('PIICLASSIFICATIONSPLACEHOLDER', guardRail.piiClassifications.flatMap(item => item.details).join(', '));
+  // Prepare system prompt with PII classifications and guardrail rules
+  let prepareSystemPrompt = (guardRail) => {
+    let compiledClassificationDetails = guardRail.piiClassifications.flatMap(item => item.details).join(', ');
+    let prompt = guardRail.systemPrompt.replace('PIICLASSIFICATIONSPLACEHOLDER', compiledClassificationDetails);
     prompt += guardRail.rulesSet.map(rule => `${rule}`).join(' ');
     return prompt;
   };
 
   // Create system prompt message
-  let systemMessage = prepareAssistantPrompt(guardRail);
-  systemMessage = new SystemMessage(systemMessage);
+  const systemPrompt = prepareSystemPrompt(guardRail);
+  const systemMessage = new SystemMessage(systemPrompt);
 
   // Endpoint to receive document text from client
   app.post('/api/send-text', async (request, response) => {
@@ -137,12 +144,15 @@ export default function registerHandlers(app) {
   // Endpoint to send results back to client
   app.get('/api/get-results', async (request, response) => {
     try {
-      // Check if analysis data is available
-      if (!analysisData)
+      // Check if analysis data is valid
+      const validAnalysis = isValidAnalysis();
+      if (!validAnalysis) {
         return response.status(200).json({
-          error: 'No analysis results found. Please analyze the document first.',
+          analysis: analysisData,
+          error: 'No analysis results found.',
           success: false
         });
+      }
 
       response.status(200).json({
         success: true,
@@ -161,4 +171,28 @@ export default function registerHandlers(app) {
       cleanupData();
     }
   });
+
+  // Endpoint to provide configuration data to client
+  app.get('/api/config', (request, response) => {
+    const configResponse = {
+      llmModel: 'Unauthorized access to LLM model configuration.',
+      prompt: 'Unauthorized access to system prompt.'
+    };
+
+    if (process.env.EXPOSE_CONFIGURATION === 'true') {
+      configResponse.llmModel = process.env.OPENAI_MODEL;
+      configResponse.prompt = formatSystemPrompt(guardRail);
+    }
+    
+    response.json(configResponse);
+  });
+
+  let formatSystemPrompt = (guardRail) => {
+    let compiledClassificationDetails = guardRail.piiClassifications.flatMap(item => item.details.map(detail => `\n- ${detail}`)).join('');
+    let formattedPrompt = guardRail.systemPrompt.replace('PIICLASSIFICATIONSPLACEHOLDER', compiledClassificationDetails);
+    let placeHolderText = 'Consider applying the following rules:';
+    formattedPrompt = formattedPrompt.replace(placeHolderText, `\n\n${placeHolderText}`);
+    formattedPrompt += guardRail.rulesSet.map(rule => `\n${rule}`).join('\n');
+    return formattedPrompt;
+  };
 }

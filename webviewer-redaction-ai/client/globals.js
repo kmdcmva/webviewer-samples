@@ -3,6 +3,8 @@ let loadedDocument = null;
 globalThis.loadedDocument = loadedDocument;
 let aiAnalysisResult = null;
 globalThis.aiAnalysisResult = aiAnalysisResult;
+let aiPanel = null;
+globalThis.aiPanel = aiPanel;
 
 
 const files = [

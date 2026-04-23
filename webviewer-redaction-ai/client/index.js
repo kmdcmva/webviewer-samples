@@ -1,5 +1,6 @@
 import DocumentManager from './document/manager.js';
 import functionMap from './ui/functionMap.js';
+import AIPanel from './ui/aiPanel.js';
 const customUIFile = './ui/custom.json';
 
 const instance = await WebViewer({
@@ -9,6 +10,7 @@ const instance = await WebViewer({
   loadAsPDF: true,
   enableFilePicker: true, // Enable file picker to open files. In WebViewer -> menu icon -> Open File
   enableRedaction: true,
+  css: 'ui/styles.css',
   licenseKey: 'YOUR_LICENSE_KEY',
 }, document.getElementById('viewer'));
 
@@ -38,7 +40,10 @@ documentViewer.addEventListener('documentLoaded', async () => {
 
   // Load document manager
   globalThis.loadedDocument = new DocumentManager(documentViewer);
-  await globalThis.loadedDocument.initialize().then(() => {
+  await globalThis.loadedDocument.initialize().then(async () => {
+    globalThis.aiPanel = new AIPanel();
+    await globalThis.aiPanel.initialize();
+    globalThis.aiPanel.show();
   }).catch(error => {
     console.error('Failed to initialize document manager:', error);
   });

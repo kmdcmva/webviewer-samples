@@ -1,0 +1,23 @@
+.aiPanelDivClass {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  width: 100%;
+  gap: 12px;
+}
+
+.systemMessageDivClass {
+  display: inline-block;
+  padding: 8px 12px;
+  border-radius: 9px;
+  background-color: var(--gray-2);
+}
+
+.humanMessageDivClass {
+  display: inline-block;
+  padding: 8px 12px;
+  border-radius: 9px;
+  background-color: var(--gray-4);
+  align-self: flex-end;
+  max-width: 70%;
+}

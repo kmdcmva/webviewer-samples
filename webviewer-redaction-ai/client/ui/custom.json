@@ -995,6 +995,11 @@
     "redactionPanel": {
       "dataElement": "redactionPanel",
       "render": "redactionPanel",
+      "location": "start"
+    },
+    "aiPanel": {
+      "dataElement": "aiPanel",
+      "render": "aiPanelRender",
       "location": "end"
     }
   },

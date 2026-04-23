@@ -36,6 +36,47 @@ test('PII redaction tool button visibility', async ({ page }) => {
   await expect(component).toBeVisible();
 });
 
+// Test the AI panel is rendering the expected results after clicking
+// the AI PII redaction tool button and completing the mocked workflow.
+test('AI Panel renders the expected results', async ({ page }) => {
+  await page.goto('/client/index.html');
+
+  // Click the Redact tab to activate the Redact toolbar group.
+  await page.locator('button[data-element="toolbarGroup-Redact"]').click();
+
+  // Ensure full document text is loaded before triggering analysis requests.
+  await expect.poll(
+    () => page.evaluate(() => globalThis.loadedDocument?.text || '')
+  ).toContain('Peady, Eff, & Wright Exporting');
+
+  // Ensure full document text length/size is within limits before triggering analysis requests.
+  await expect.poll(
+    () => page.evaluate(() => globalThis.loadedDocument?.text.length || 0)
+  ).toBeLessThanOrEqual(30000);
+
+  // Ensure page count is within limits before triggering analysis requests.
+  await expect.poll(
+    () => page.evaluate(() => globalThis.loadedDocument?.pageCount || 0)
+  ).toBeLessThanOrEqual(20);
+
+  // Trigger analyzeDocumentForPII + applyRedactions through the UI button.
+  const pIIBtn = page.locator('button[data-element="AIPIIRedactionToolButton"]');
+  await pIIBtn.click();
+
+  // Verify mocked endpoint workflow for send -> analyze -> get result.
+  await expect.poll(() => mockCalls.sendText).toBe(1);
+  await expect.poll(() => mockCalls.analyzePII).toBe(1);
+  await expect.poll(() => mockCalls.getResults).toBe(1);
+  await expect.poll(() => normalizeMultilineText(mockCalls.sendTextPayload?.documentText)).toBe(
+    normalizeMultilineText(MOCK_DATA.documentText)
+  );
+
+  // Assert that the AI Panel is visible after clicking the button and completing the mocked workflow.
+  const panel = page.locator('div.ModularPanel[data-element="aiPanel"]');
+  await panel.waitFor({ state: 'visible' });
+  await expect(panel).toBeVisible();
+});
+
 // Applying AI PII redaction with mocked endpoint responses.
 test('Perform AI PII redaction for document text size and page count within limits', async ({ page }) => {
   await page.goto('/client/index.html');
@@ -110,7 +151,7 @@ test('Expect an alert when loaded document has no identifiable PII', async ({ pa
       contentType: 'application/json',
       body: JSON.stringify({
         success: false,
-        error: 'No analysis results found. Please analyze the document first.'
+        error: 'No analysis results found.'
       })
     });
   });

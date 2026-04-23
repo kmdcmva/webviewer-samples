@@ -5,6 +5,7 @@
 class DocumentManager {
   #documentViewer;
   #instance;
+  fileName;
   text;
   #isValid;
   pageCount;
@@ -12,6 +13,7 @@ class DocumentManager {
   constructor(documentViewer) {
     this.#documentViewer = documentViewer;
     this.#instance = null;
+    this.fileName = '';
     this.text = '';
     this.#isValid = true;
     this.pageCount = 0;
@@ -24,6 +26,7 @@ class DocumentManager {
       console.error('Failed to initialize document manager.');
       return;
     }
+    this.fileName = this.#instance.getFilename();
     this.pageCount = this.#instance.getPageCount();
     await this.#instance.getDocumentCompletePromise().then(async () => {
       // Load full document text

@@ -1,3 +1,8 @@
+function removeLeadingNumbering(text) {
+  const pattern = /^\s*(?:(?:\d+|[IVXLCDM]+)[)\-–—]*|[•*·\-–—])\s*/i;
+  return text.replace(pattern, '');
+}
+
 // Function to create redaction annotations from AI analysis results
 const applyRedactions = async () => {
   const { documentViewer, Search, annotationManager, Annotations } = WebViewer.getInstance().Core;
@@ -33,7 +38,19 @@ const applyRedactions = async () => {
 
   // Search for PII entities then create redactions
   let searchOptions = null;
-  for (const searchText of piiEntities) {
+  for (const piiEntity of piiEntities) {
+
+    const separatorIndex = piiEntity.indexOf(':');
+    if (separatorIndex === -1)
+      continue;
+
+    let classification = piiEntity.slice(0, separatorIndex).trim();
+    const pii = piiEntity.slice(separatorIndex + 1).trim();
+    if (classification === '' || pii === '')
+      continue;
+
+    classification = removeLeadingNumbering(classification);
+
     await new Promise((resolve) => {
       searchOptions = {
         // search the entire document
@@ -55,7 +72,9 @@ const applyRedactions = async () => {
             });
 
             redactAnnot.Author = "AI Redaction";
-            redactAnnot.setContents("Redacted PII");
+            redactAnnot.OverlayText = classification;
+            redactAnnot.FontSize = '10pt';
+            redactAnnot.setContents(classification);
             redactAnnot.setCustomData('trn-annot-preview', documentViewer.getSelectedText(redactAnnot.PageNumber));
 
             // Apply and redraw the redaction annotation
@@ -65,7 +84,7 @@ const applyRedactions = async () => {
         },
       };
 
-      documentViewer.textSearchInit(searchText, searchMode, searchOptions);
+      documentViewer.textSearchInit(pii, searchMode, searchOptions);
     });
   }
 };
