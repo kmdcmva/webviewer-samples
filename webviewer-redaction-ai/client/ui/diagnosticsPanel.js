@@ -9,24 +9,15 @@ class DiagnosticsPanel {
   }
 
   render() {
-    const llmModelBubble = this.#createBubble(`LLM Model: ${globalThis.llmModel}`, 'system');
-    const fileNameBubble = this.#createBubble(`Document: ${globalThis.loadedDocument.fileName}`, 'system');
-
     // The main container div
-    const panel = document.createElement('div');
-    panel.className = 'diagnosticsPanelDivClass';
+    this.#panelElement = document.createElement('div');
+    this.#panelElement.className = 'diagnosticsPanelDivClass';
 
     const title = document.createElement('div');
     title.className = 'diagnosticsPanelTitleClass';
     title.innerText = 'LLM Session Diagnostics';
-    panel.appendChild(title);
-    
-    if (llmModelBubble)
-      panel.appendChild(llmModelBubble);
-    if (fileNameBubble)
-      panel.appendChild(fileNameBubble);
+    this.#panelElement.appendChild(title);
 
-    this.#panelElement = panel;
     return this.#panelElement;
   }
 

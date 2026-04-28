@@ -7,28 +7,28 @@ const functionMap = {
   },
   'AIPIIRedactionClick': async () => {
     if (globalThis.systemPrompt && globalThis.systemPrompt.trim() !== '')
-      globalThis.diagnosticsPanel?.display(globalThis.systemPrompt, 'human');
+      globalThis.diagnosticsPanel.display(`System Prompt:\n\n${globalThis.systemPrompt}`, 'human');
     else 
-      globalThis.diagnosticsPanel?.display('System prompt is unavailable. Please check server configuration is retrieved.', 'system');
+      globalThis.diagnosticsPanel.display('System Prompt: Unavailable. Please check server configuration is retrieved.', 'system');
 
     const analysisSucceeded = await analyzeDocumentForPII();
     if (!analysisSucceeded || !globalThis.aiAnalysisResult) {
-      globalThis.diagnosticsPanel?.display('Status: Failure', 'system');
-      globalThis.diagnosticsPanel?.display('Response:', 'system');
-      globalThis.diagnosticsPanel?.display('Unable to analyze document for PII.', 'system');
+      globalThis.diagnosticsPanel.display('Status: Failure', 'system');
+      globalThis.diagnosticsPanel.display('Response:', 'system');
+      globalThis.diagnosticsPanel.display('Unable to analyze document for PII.', 'system');
       if (globalThis.aiAnalysisResult?.error)
-        globalThis.diagnosticsPanel?.display(`Error details: ${globalThis.aiAnalysisResult.error}`, 'system');
+        globalThis.diagnosticsPanel.display(`Error details: ${globalThis.aiAnalysisResult.error}`, 'system');
       return;
     }
 
-    globalThis.diagnosticsPanel?.display(`Status: ${globalThis.aiAnalysisResult.success ? 'Success' : 'Failure'}`, 'system');
-    globalThis.diagnosticsPanel?.display('Response:', 'system');
+    globalThis.diagnosticsPanel.display(`Status: ${globalThis.aiAnalysisResult.success ? 'Success' : 'Failure'}`, 'system');
+    globalThis.diagnosticsPanel.display('Response:', 'system');
     if (globalThis.aiAnalysisResult.success) {
-      globalThis.diagnosticsPanel?.display(globalThis.aiAnalysisResult.analysis, 'system');
+      globalThis.diagnosticsPanel.display(globalThis.aiAnalysisResult.analysis, 'system');
       await applyRedactions();
     }
     else
-      globalThis.diagnosticsPanel?.display(globalThis.aiAnalysisResult.error, 'system');
+      globalThis.diagnosticsPanel.display(globalThis.aiAnalysisResult.error, 'system');
   },
 };
 

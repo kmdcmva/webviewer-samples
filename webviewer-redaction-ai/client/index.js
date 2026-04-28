@@ -38,7 +38,16 @@ documentViewer.addEventListener('documentLoaded', async () => {
   UI.setLayoutMode(UI.LayoutMode.FacingContinuous);
   UI.setFitMode(UI.FitMode.FitPage);
 
-  await getServerConfig();
+  globalThis.diagnosticsPanel = new DiagnosticsPanel();
+  globalThis.diagnosticsPanel.show();
+  
+  let result = await getServerConfig();
+  if (result.success)
+    globalThis.diagnosticsPanel.display(`LLM Model: ${globalThis.llmModel}`, 'system');
+  else {
+    alert(result.error);
+    globalThis.diagnosticsPanel.display(`LLM Model: Unavailable. Please check server configuration is retrieved.`, 'system');
+  }
 
   // Retrieve LLM model name and system prompt from server
   async function getServerConfig() {
@@ -72,8 +81,7 @@ documentViewer.addEventListener('documentLoaded', async () => {
   // Load document manager
   globalThis.loadedDocument = new DocumentManager(documentViewer);
   await globalThis.loadedDocument.initialize().then(async () => {
-    globalThis.diagnosticsPanel = new DiagnosticsPanel();
-    globalThis.diagnosticsPanel.show();
+    globalThis.diagnosticsPanel.display(`Document: ${globalThis.loadedDocument?.fileName}`, 'system');
   }).catch(error => {
     console.error('Failed to initialize document manager:', error);
   });
