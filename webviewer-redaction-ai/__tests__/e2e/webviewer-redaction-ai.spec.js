@@ -36,9 +36,18 @@ test('PII redaction tool button visibility', async ({ page }) => {
   await expect(component).toBeVisible();
 });
 
-// Test the AI panel is rendering the expected results after clicking
+// Validate the diagnostics panel toggle button visibility.
+test('Diagnostics panel toggle button visibility', async ({ page }) => {
+  await page.goto('/client/index.html');
+
+  const toggle = page.locator('button[data-element="diagnosticsPanelToggle"]');
+  await toggle.waitFor({ state: 'visible' });
+  await expect(toggle).toBeVisible();
+});
+
+// Test the diagnostics panel is rendering the expected results after clicking
 // the AI PII redaction tool button and completing the mocked workflow.
-test('AI Panel renders the expected results', async ({ page }) => {
+test('Diagnostics panel renders the expected results', async ({ page }) => {
   await page.goto('/client/index.html');
 
   // Click the Redact tab to activate the Redact toolbar group.
@@ -71,7 +80,7 @@ test('AI Panel renders the expected results', async ({ page }) => {
     normalizeMultilineText(MOCK_DATA.documentText)
   );
 
-  // Assert that the AI Panel is visible after clicking the button and completing the mocked workflow.
+  // Assert that the diagnostics panel is visible after clicking the button and completing the mocked workflow.
   const panel = page.locator('div.ModularPanel[data-element="diagnosticsPanel"]');
   await panel.waitFor({ state: 'visible' });
   await expect(panel).toBeVisible();
@@ -212,4 +221,45 @@ test('Expect an alert when document text exceeds 30000 characters with page coun
   await expect.poll(() => sendTextCalls).toBe(1);
   await expect.poll(() => mockCalls.analyzePII).toBe(0);
   await expect.poll(() => mockCalls.getResults).toBe(0);
+});
+
+// Simulates user hiding and showing the diagnostics panel
+// via clicking the toggle button in the header.
+// Diagnostics panel should maintain the visibility of the messages.
+test('Hide/Show diagnostics panel', async ({ page }) => {
+  await page.goto('/client/index.html');
+
+  // Click the Redact tab to activate the Redact toolbar group.
+  await page.locator('button[data-element="toolbarGroup-Redact"]').click();
+
+  // Ensure full document text is loaded before triggering analysis requests.
+  await expect.poll(
+    () => page.evaluate(() => globalThis.loadedDocument?.text || '')
+  ).toContain('Peady, Eff, & Wright Exporting');
+
+  // Ensure full document text length/size is within limits before triggering analysis requests.
+  await expect.poll(
+    () => page.evaluate(() => globalThis.loadedDocument?.text.length || 0)
+  ).toBeLessThanOrEqual(30000);
+
+  // Ensure page count is within limits before triggering analysis requests.
+  await expect.poll(
+    () => page.evaluate(() => globalThis.loadedDocument?.pageCount || 0)
+  ).toBeLessThanOrEqual(20);
+
+  // Trigger analyzeDocumentForPII + applyRedactions through the UI button.
+  const pIIBtn = page.locator('button[data-element="AIPIIRedactionToolButton"]');
+  await pIIBtn.click();
+
+  // Locate the toggle button and diagnostics panel
+  const toggle = page.locator('button[data-element="diagnosticsPanelToggle"]');
+  const panel = page.locator('div.ModularPanel[data-element="diagnosticsPanel"]');
+
+  // Hide the diagnostics panel
+  await toggle.click();
+  await expect(panel).not.toBeVisible();
+
+  // Show the diagnostics panel again
+  await toggle.click();
+  await expect(panel).toBeVisible();
 });
