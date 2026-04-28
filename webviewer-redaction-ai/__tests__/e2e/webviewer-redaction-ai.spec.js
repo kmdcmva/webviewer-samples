@@ -225,7 +225,6 @@ test('Expect an alert when document text exceeds 30000 characters with page coun
 
 // Simulates user hiding and showing the diagnostics panel
 // via clicking the toggle button in the header.
-// Diagnostics panel should maintain the visibility of the messages.
 test('Hide/Show diagnostics panel', async ({ page }) => {
   await page.goto('/client/index.html');
 

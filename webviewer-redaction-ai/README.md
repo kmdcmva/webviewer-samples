@@ -47,8 +47,8 @@ These credentials will be used to configure the chat model behavior via paramete
 
 **Response configuration**:
 
-- `maxTokens` - Controls the tokens total number. It is useful in controlling latency and cost as it maintains the balance, but consider set it too low can truncate outputs; set it too high and can increase cost and response time.
-- `temperature` - Controls randomness. Higher value generates creative response, while lower value generates deterministic and consistent ones. It is useful for extraction, redaction decisions, classification, and structured output.
+- `maxTokens` - Controls the total number of tokens in the response. It is useful for managing latency and cost, but setting it too low can truncate outputs, while setting it too high can increase cost and response time.
+- `temperature` - Controls randomness. Higher values generate more creative responses, while lower values generate more deterministic and consistent responses. It is useful for extraction, redaction decisions, classification, and structured output.
 
 For this sample these credential parameters are used in the [LLM initialization](https://github.com/ApryseSDK/webviewer-samples/blob/main/webviewer-redaction-ai/server/llmManager.js#L21), and their values are read from the matching configurations within the `.env` file.
 

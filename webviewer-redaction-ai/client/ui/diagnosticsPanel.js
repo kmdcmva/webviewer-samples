@@ -34,10 +34,12 @@ class DiagnosticsPanel {
     if (!bubble)
       return;
 
-    if (this.#panelElement) {
+    // Store the message in the diagnostics log for
+    // future rendering when the panel is shown again.
+    this.#diagnosticsLog.push({ message, messageType });
+
+    if (this.#panelElement)
       this.#panelElement.appendChild(bubble);
-      this.#diagnosticsLog.push({ message, messageType });
-    }
   }
 
   #createBubble(message, messageType) {

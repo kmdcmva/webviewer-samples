@@ -6,10 +6,7 @@ const functionMap = {
     return globalThis.diagnosticsPanel.render();
   },
   'AIPIIRedactionClick': async () => {
-    if (globalThis.systemPrompt && globalThis.systemPrompt.trim() !== '')
-      globalThis.diagnosticsPanel.display(`System Prompt:\n\n${globalThis.systemPrompt}`, 'human');
-    else 
-      globalThis.diagnosticsPanel.display('System Prompt: Unavailable. Please check server configuration is retrieved.', 'system');
+    globalThis.diagnosticsPanel.display(`System Prompt:\n\n${globalThis.systemPrompt}`, 'human');
 
     const analysisSucceeded = await analyzeDocumentForPII();
     if (!analysisSucceeded || !globalThis.aiAnalysisResult) {

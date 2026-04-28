@@ -42,18 +42,18 @@ documentViewer.addEventListener('documentLoaded', async () => {
   globalThis.diagnosticsPanel.show();
   
   let result = await getServerConfig();
-  if (result.success)
-    globalThis.diagnosticsPanel.display(`LLM Model: ${globalThis.llmModel}`, 'system');
-  else {
+  globalThis.diagnosticsPanel.display(`LLM Model: ${globalThis.llmModel}`, 'system');
+  if (!result.success)
     alert(result.error);
-    globalThis.diagnosticsPanel.display(`LLM Model: Unavailable. Please check server configuration is retrieved.`, 'system');
-  }
 
   // Retrieve LLM model name and system prompt from server
   async function getServerConfig() {
     const errorMessage = 'Failed to retrieve configuration from server.';
     try {
       const configResponse = await fetch('/api/config');
+      const configData = await configResponse.json();
+      globalThis.llmModel = configData.llmModel;
+      globalThis.systemPrompt = configData.systemPrompt;
       if (!configResponse.ok) {
         return {
           error: errorMessage,
@@ -61,9 +61,7 @@ documentViewer.addEventListener('documentLoaded', async () => {
           success: false,
         };
       }
-      const configData = await configResponse.json();
-      globalThis.llmModel = configData.llmModel;
-      globalThis.systemPrompt = configData.systemPrompt;
+      
       return {
         status: configResponse.status,
         success: true
