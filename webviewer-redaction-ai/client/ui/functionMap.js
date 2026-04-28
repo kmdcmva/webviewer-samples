@@ -6,26 +6,26 @@ const functionMap = {
     return globalThis.diagnosticsPanel.render();
   },
   'AIPIIRedactionClick': async () => {
-    globalThis.diagnosticsPanel?.addBubble(globalThis.diagnosticsPanel.prompt, 'human');
+    globalThis.diagnosticsPanel?.display(globalThis.diagnosticsPanel.prompt, 'human');
 
     const analysisSucceeded = await analyzeDocumentForPII();
     if (!analysisSucceeded || !globalThis.aiAnalysisResult) {
-      globalThis.diagnosticsPanel?.addBubble('Status: Failure', 'system');
-      globalThis.diagnosticsPanel?.addBubble('Response:', 'system');
-      globalThis.diagnosticsPanel?.addBubble('Unable to analyze document for PII.', 'system');
+      globalThis.diagnosticsPanel?.display('Status: Failure', 'system');
+      globalThis.diagnosticsPanel?.display('Response:', 'system');
+      globalThis.diagnosticsPanel?.display('Unable to analyze document for PII.', 'system');
       if (globalThis.aiAnalysisResult?.error)
-        globalThis.diagnosticsPanel?.addBubble(`Error details: ${globalThis.aiAnalysisResult.error}`, 'system');
+        globalThis.diagnosticsPanel?.display(`Error details: ${globalThis.aiAnalysisResult.error}`, 'system');
       return;
     }
 
-    globalThis.diagnosticsPanel?.addBubble(`Status: ${globalThis.aiAnalysisResult.success ? 'Success' : 'Failure'}`, 'system');
-    globalThis.diagnosticsPanel?.addBubble('Response:', 'system');
+    globalThis.diagnosticsPanel?.display(`Status: ${globalThis.aiAnalysisResult.success ? 'Success' : 'Failure'}`, 'system');
+    globalThis.diagnosticsPanel?.display('Response:', 'system');
     if (globalThis.aiAnalysisResult.success) {
-      globalThis.diagnosticsPanel?.addBubble(globalThis.aiAnalysisResult.analysis, 'system');
+      globalThis.diagnosticsPanel?.display(globalThis.aiAnalysisResult.analysis, 'system');
       await applyRedactions();
     }
     else
-      globalThis.diagnosticsPanel?.addBubble(globalThis.aiAnalysisResult.error, 'system');
+      globalThis.diagnosticsPanel?.display(globalThis.aiAnalysisResult.error, 'system');
   },
 };
 

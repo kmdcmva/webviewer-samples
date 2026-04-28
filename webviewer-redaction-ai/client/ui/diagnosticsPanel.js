@@ -39,7 +39,7 @@ class DiagnosticsPanel {
     return this.#panelElement;
   }
 
-  addBubble(message, messageType) {
+  display(message, messageType) {
     const bubble = this.#createBubble(message, messageType);
     if (!bubble)
       return;
