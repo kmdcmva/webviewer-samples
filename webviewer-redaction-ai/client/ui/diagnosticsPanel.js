@@ -1,6 +1,7 @@
 
 class DiagnosticsPanel {
   #panelElement = null;
+  #diagnosticsLog = [];
 
   show() {
     WebViewer.getInstance().UI.closeElements(['diagnosticsPanel']);
@@ -18,6 +19,13 @@ class DiagnosticsPanel {
     title.innerText = 'LLM Session Diagnostics';
     this.#panelElement.appendChild(title);
 
+    // Restore existing log entries when the panel is re-rendered (for example, after toggle).
+    this.#diagnosticsLog.forEach(({ message, messageType }) => {
+      const bubble = this.#createBubble(message, messageType);
+      if (bubble)
+        this.#panelElement.appendChild(bubble);
+    });
+
     return this.#panelElement;
   }
 
@@ -26,11 +34,16 @@ class DiagnosticsPanel {
     if (!bubble)
       return;
 
-    if (this.#panelElement)
+    if (this.#panelElement) {
       this.#panelElement.appendChild(bubble);
+      this.#diagnosticsLog.push({ message, messageType });
+    }
   }
 
   #createBubble(message, messageType) {
+    if (!message || message.trim() === '')
+      return null;
+
     const bubble = document.createElement('div');
 
     if (messageType === 'system')
@@ -38,9 +51,6 @@ class DiagnosticsPanel {
     else if (messageType === 'human')
       bubble.className = 'humanMessageDivClass';
     else
-      return null;
-
-    if (!message || message.trim() === '')
       return null;
 
     bubble.innerText = message;
