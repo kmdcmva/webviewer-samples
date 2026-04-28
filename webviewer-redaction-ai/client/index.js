@@ -38,11 +38,41 @@ documentViewer.addEventListener('documentLoaded', async () => {
   UI.setLayoutMode(UI.LayoutMode.FacingContinuous);
   UI.setFitMode(UI.FitMode.FitPage);
 
+  await getServerConfig();
+
+  // Retrieve LLM model name and system prompt from server
+  async function getServerConfig() {
+    const errorMessage = 'Failed to retrieve configuration from server.';
+    try {
+      const configResponse = await fetch('/api/config');
+      if (!configResponse.ok) {
+        return {
+          error: errorMessage,
+          status: configResponse.status,
+          success: false,
+        };
+      }
+      const configData = await configResponse.json();
+      globalThis.llmModel = configData.llmModel;
+      globalThis.systemPrompt = configData.systemPrompt;
+      return {
+        status: configResponse.status,
+        success: true
+      };
+    } catch (error) {
+      return {
+        error: errorMessage,
+        details: error.message,
+        status: 404,
+        success: false
+      };
+    }
+  }
+
   // Load document manager
   globalThis.loadedDocument = new DocumentManager(documentViewer);
   await globalThis.loadedDocument.initialize().then(async () => {
     globalThis.diagnosticsPanel = new DiagnosticsPanel();
-    await globalThis.diagnosticsPanel.initialize();
     globalThis.diagnosticsPanel.show();
   }).catch(error => {
     console.error('Failed to initialize document manager:', error);

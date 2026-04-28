@@ -1,21 +1,6 @@
 
 class DiagnosticsPanel {
   #panelElement = null;
-  #llmModel = null;
-  prompt = null;
-
-  async initialize() {
-    // Fetch LLM model name from server config before initializing the UI
-    try {
-      const configResponse = await fetch('/api/config');
-      if (configResponse.ok) {
-        const configData = await configResponse.json();
-        this.#llmModel = configData.llmModel;
-        this.prompt = configData.prompt;
-      }
-    } catch {
-    }
-  }
 
   show() {
     WebViewer.getInstance().UI.closeElements(['diagnosticsPanel']);
@@ -24,7 +9,7 @@ class DiagnosticsPanel {
   }
 
   render() {
-    const llmModelBubble = this.#createBubble(`LLM Model: ${this.#llmModel}`, 'system');
+    const llmModelBubble = this.#createBubble(`LLM Model: ${globalThis.llmModel}`, 'system');
     const fileNameBubble = this.#createBubble(`Document: ${globalThis.loadedDocument.fileName}`, 'system');
 
     // The main container div
