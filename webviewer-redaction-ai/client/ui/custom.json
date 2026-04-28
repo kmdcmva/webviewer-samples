@@ -997,9 +997,9 @@
       "render": "redactionPanel",
       "location": "start"
     },
-    "aiPanel": {
-      "dataElement": "aiPanel",
-      "render": "aiPanelRender",
+    "diagnosticsPanel": {
+      "dataElement": "diagnosticsPanel",
+      "render": "diagnosticsPanelRender",
       "location": "end"
     }
   },

@@ -1,6 +1,6 @@
 import DocumentManager from './document/manager.js';
 import functionMap from './ui/functionMap.js';
-import AIPanel from './ui/aiPanel.js';
+import DiagnosticsPanel from './ui/diagnosticsPanel.js';
 const customUIFile = './ui/custom.json';
 
 const instance = await WebViewer({
@@ -41,9 +41,9 @@ documentViewer.addEventListener('documentLoaded', async () => {
   // Load document manager
   globalThis.loadedDocument = new DocumentManager(documentViewer);
   await globalThis.loadedDocument.initialize().then(async () => {
-    globalThis.aiPanel = new AIPanel();
-    await globalThis.aiPanel.initialize();
-    globalThis.aiPanel.show();
+    globalThis.diagnosticsPanel = new DiagnosticsPanel();
+    await globalThis.diagnosticsPanel.initialize();
+    globalThis.diagnosticsPanel.show();
   }).catch(error => {
     console.error('Failed to initialize document manager:', error);
   });

@@ -72,7 +72,7 @@ test('AI Panel renders the expected results', async ({ page }) => {
   );
 
   // Assert that the AI Panel is visible after clicking the button and completing the mocked workflow.
-  const panel = page.locator('div.ModularPanel[data-element="aiPanel"]');
+  const panel = page.locator('div.ModularPanel[data-element="diagnosticsPanel"]');
   await panel.waitFor({ state: 'visible' });
   await expect(panel).toBeVisible();
 });

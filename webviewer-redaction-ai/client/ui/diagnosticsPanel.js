@@ -1,5 +1,5 @@
 
-class AIPanel {
+class DiagnosticsPanel {
   #panelElement = null;
   #llmModel = null;
   prompt = null;
@@ -18,9 +18,9 @@ class AIPanel {
   }
 
   show() {
-    WebViewer.getInstance().UI.closeElements(['aiPanel']);
-    WebViewer.getInstance().UI.openElements(['aiPanel']);
-    WebViewer.getInstance().UI.setPanelWidth('aiPanel', 400);
+    WebViewer.getInstance().UI.closeElements(['diagnosticsPanel']);
+    WebViewer.getInstance().UI.openElements(['diagnosticsPanel']);
+    WebViewer.getInstance().UI.setPanelWidth('diagnosticsPanel', 400);
   }
 
   render() {
@@ -29,7 +29,7 @@ class AIPanel {
 
     // The main container div
     const panel = document.createElement('div');
-    panel.className = 'aiPanelDivClass';
+    panel.className = 'diagnosticsPanelDivClass';
     if (llmModelBubble)
       panel.appendChild(llmModelBubble);
     if (fileNameBubble)
@@ -66,4 +66,4 @@ class AIPanel {
   }
 }
 
-export default AIPanel;
+export default DiagnosticsPanel;

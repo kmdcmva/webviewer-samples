@@ -2,30 +2,30 @@ import { analyzeDocumentForPII } from '../document/analyzer.js';
 import { applyRedactions } from '../redaction.js';
 
 const functionMap = {
-  'aiPanelRender': () => {
-    return globalThis.aiPanel.render();
+  'diagnosticsPanelRender': () => {
+    return globalThis.diagnosticsPanel.render();
   },
   'AIPIIRedactionClick': async () => {
-    globalThis.aiPanel?.addBubble(globalThis.aiPanel.prompt, 'human');
+    globalThis.diagnosticsPanel?.addBubble(globalThis.diagnosticsPanel.prompt, 'human');
 
     const analysisSucceeded = await analyzeDocumentForPII();
     if (!analysisSucceeded || !globalThis.aiAnalysisResult) {
-      globalThis.aiPanel?.addBubble('Status: Failure', 'system');
-      globalThis.aiPanel?.addBubble('Response:', 'system');
-      globalThis.aiPanel?.addBubble('Unable to analyze document for PII.', 'system');
+      globalThis.diagnosticsPanel?.addBubble('Status: Failure', 'system');
+      globalThis.diagnosticsPanel?.addBubble('Response:', 'system');
+      globalThis.diagnosticsPanel?.addBubble('Unable to analyze document for PII.', 'system');
       if (globalThis.aiAnalysisResult?.error)
-        globalThis.aiPanel?.addBubble(`Error details: ${globalThis.aiAnalysisResult.error}`, 'system');
+        globalThis.diagnosticsPanel?.addBubble(`Error details: ${globalThis.aiAnalysisResult.error}`, 'system');
       return;
     }
 
-    globalThis.aiPanel?.addBubble(`Status: ${globalThis.aiAnalysisResult.success ? 'Success' : 'Failure'}`, 'system');
-    globalThis.aiPanel?.addBubble('Response:', 'system');
+    globalThis.diagnosticsPanel?.addBubble(`Status: ${globalThis.aiAnalysisResult.success ? 'Success' : 'Failure'}`, 'system');
+    globalThis.diagnosticsPanel?.addBubble('Response:', 'system');
     if (globalThis.aiAnalysisResult.success) {
-      globalThis.aiPanel?.addBubble(globalThis.aiAnalysisResult.analysis, 'system');
+      globalThis.diagnosticsPanel?.addBubble(globalThis.aiAnalysisResult.analysis, 'system');
       await applyRedactions();
     }
     else
-      globalThis.aiPanel?.addBubble(globalThis.aiAnalysisResult.error, 'system');
+      globalThis.diagnosticsPanel?.addBubble(globalThis.aiAnalysisResult.error, 'system');
   },
 };
 
