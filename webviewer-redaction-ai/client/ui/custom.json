@@ -787,6 +787,13 @@
       "img": "icon-header-pan",
       "toolName": "Pan"
     },
+    "diagnosticsPanelToggle": {
+      "dataElement": "diagnosticsPanelToggle",
+      "title": "LLM Session Diagnostics",
+      "type": "toggleButton",
+      "img": "assets/llm-diagnostics.svg",
+      "toggleElement": "diagnosticsPanel"
+    },
     "newDocumentButton": {
       "dataElement": "newDocumentButton",
       "presetDataElement": "newDocumentPresetButton",
@@ -826,7 +833,8 @@
         "default-ribbon-group",
         "comparePanelToggle",
         "searchPanelToggle",
-        "notesPanelToggle"
+        "notesPanelToggle",
+        "diagnosticsPanelToggle"
       ]
     },
     "tools-header": {
