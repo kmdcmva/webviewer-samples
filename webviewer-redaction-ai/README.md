@@ -50,16 +50,16 @@ These credentials will be used to configure the chat model behavior via paramete
 - `maxTokens` - Controls the total number of tokens in the response. It is useful for managing latency and cost, but setting it too low can truncate outputs, while setting it too high can increase cost and response time.
 - `temperature` - Controls randomness. Higher values generate more creative responses, while lower values generate more deterministic and consistent responses. It is useful for extraction, redaction decisions, classification, and structured output.
 
-For this sample these credential parameters are used in the [LLM initialization](https://github.com/ApryseSDK/webviewer-samples/blob/main/webviewer-redaction-ai/server/llmManager.js#L21), and their values are read from the matching configurations within the `.env` file.
-
-For more information and usage of the credential parameters, refer to [Parameters](https://docs.langchain.com/oss/javascript/langchain/models#parameters).
-
-### Recommended Values
+**Recommended values**:
 
 For stable sample performance, the following configuration is recommended:
 
 - `OPENAI_MAX_TOKENS=500`
 - `OPENAI_TEMPERATURE=0.0`
+
+For this sample these credential parameters are used in the [LLM initialization](https://github.com/ApryseSDK/webviewer-samples/blob/main/webviewer-redaction-ai/server/llmManager.js#L21), and their values are read from the matching configurations within the `.env` file.
+
+For more information and usage of the credential parameters, refer to [Parameters](https://docs.langchain.com/oss/javascript/langchain/models#parameters).
 
 ## Run
 
