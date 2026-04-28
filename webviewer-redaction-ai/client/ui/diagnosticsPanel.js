@@ -30,6 +30,12 @@ class DiagnosticsPanel {
     // The main container div
     const panel = document.createElement('div');
     panel.className = 'diagnosticsPanelDivClass';
+
+    const title = document.createElement('div');
+    title.className = 'diagnosticsPanelTitleClass';
+    title.innerText = 'LLM Session Diagnostics';
+    panel.appendChild(title);
+    
     if (llmModelBubble)
       panel.appendChild(llmModelBubble);
     if (fileNameBubble)

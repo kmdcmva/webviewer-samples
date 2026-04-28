@@ -6,6 +6,17 @@
   gap: 12px;
 }
 
+.diagnosticsPanelTitleClass {
+  width: 100%;
+  padding: 0 0 8px;
+  align-items: center;
+  text-align: center;
+  border-bottom: 1px solid var(--gray-5);
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
 .systemMessageDivClass {
   display: inline-block;
   padding: 8px 12px;
