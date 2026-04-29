@@ -1,7 +1,7 @@
-import { analyzeDocumentForPII } from '../document/analyzer.js';
-import { applyRedactions } from '../redaction.js';
+import { analyzeDocumentForPII } from '../../document/analyzer.js';
+import { applyRedactions } from '../../redaction.js';
 
-const functionMap = {
+const webViewerFunctionMap = {
   'diagnosticsPanelRender': () => {
     return globalThis.diagnosticsPanel.render();
   },
@@ -29,4 +29,4 @@ const functionMap = {
   },
 };
 
-export default functionMap;
+export default webViewerFunctionMap;

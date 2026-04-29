@@ -27,12 +27,12 @@
       "reason": ""
     },
     {
-      "path": "ApryseSDK/webviewer-samples/refs/heads/main/webviewer-redaction-ai/client/ui/custom.json",
+      "path": "ApryseSDK/webviewer-samples/refs/heads/main/webviewer-redaction-ai/client/ui/webViewer/config.json",
       "description": "",
       "reason": ""
     },
     {
-      "path": "ApryseSDK/webviewer-samples/refs/heads/main/webviewer-redaction-ai/client/ui/functionMap.js",
+      "path": "ApryseSDK/webviewer-samples/refs/heads/main/webviewer-redaction-ai/client/ui/webViewer/functionMap.js",
       "description": "",
       "reason": ""
     },

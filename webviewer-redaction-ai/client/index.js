@@ -1,7 +1,7 @@
 import DocumentManager from './document/manager.js';
-import functionMap from './ui/functionMap.js';
 import DiagnosticsPanel from './ui/diagnosticsPanel.js';
-const customUIFile = './ui/custom.json';
+import webViewerFunctionMap from './ui/webViewer/functionMap.js';
+const webViewerUIConfigFile = './ui/webViewer/config.json';
 
 const instance = await WebViewer({
   path: 'lib',
@@ -19,12 +19,12 @@ const { UI } = instance;
 
 // Import modular components configuration from JSON file
 try {
-  const response = await fetch(customUIFile);
+  const response = await fetch(webViewerUIConfigFile);
   if (!response.ok)
     throw new Error(`Failed to import modular components configuration: ${response.statusText}`);
 
-  let customUIConfig = JSON.stringify(await response.json());
-  WebViewer.getInstance().UI.importModularComponents(JSON.parse(customUIConfig), functionMap);
+  let config = JSON.stringify(await response.json());
+  WebViewer.getInstance().UI.importModularComponents(JSON.parse(config), webViewerFunctionMap);
 } catch (error) {
   throw new Error(`Failed to import modular components configuration: ${error.message}`);
 }
