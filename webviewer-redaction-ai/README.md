@@ -54,6 +54,7 @@ These credentials will be used to configure the chat model behavior via paramete
 
 For stable sample performance, the following configuration is recommended:
 
+- `OPENAI_MODEL=gpt-4o-mini`
 - `OPENAI_MAX_TOKENS=500`
 - `OPENAI_TEMPERATURE=0.0`
 
