@@ -176,12 +176,12 @@ export default function registerHandlers(app) {
   app.get('/api/config', (request, response) => {
     const configResponse = {
       llmModel: 'Unauthorized access to LLM model configuration.',
-      prompt: 'Unauthorized access to system prompt.'
+      systemPrompt: 'Unauthorized access to system prompt.'
     };
 
     if (process.env.EXPOSE_CONFIGURATION === 'true') {
       configResponse.llmModel = process.env.OPENAI_MODEL;
-      configResponse.prompt = formatSystemPrompt(guardRail);
+      configResponse.systemPrompt = formatSystemPrompt(guardRail);
     }
     
     response.json(configResponse);

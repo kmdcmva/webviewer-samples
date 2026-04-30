@@ -40,10 +40,25 @@ OPENAI_TEMPERATURE=your-openai-temperature-here
 
 These credentials will be used to configure the chat model behavior via parameters set, for example:
 
-- API key - Authenticates the model's provider.
-- Model - Specifies the model to use with a provider.
-- Temperature - Controls AI response randomness.
-- Maximum Tokens - Controls the tokens total number of the AI response.
+**Chat model configuration**:
+
+- `apiKey` - Authenticates the model's provider.
+- `model` - Specifies the model to use with a provider.
+
+**Response configuration**:
+
+- `maxTokens` - Controls the total number of tokens in the response. It is useful for managing latency and cost, but setting it too low can truncate outputs, while setting it too high can increase cost and response time.
+- `temperature` - Controls randomness. Higher values generate more creative responses, while lower values generate more deterministic and consistent responses. It is useful for extraction, redaction decisions, classification, and structured output.
+
+**Recommended values**:
+
+For stable sample performance, the following configuration is recommended:
+
+- `OPENAI_MODEL=gpt-4o-mini`
+- `OPENAI_MAX_TOKENS=500`
+- `OPENAI_TEMPERATURE=0.0`
+
+For this sample these credential parameters are used in the [LLM initialization](https://github.com/ApryseSDK/webviewer-samples/blob/main/webviewer-redaction-ai/server/llmManager.js#L21), and their values are read from the matching configurations within the `.env` file.
 
 For more information and usage of the credential parameters, refer to [Parameters](https://docs.langchain.com/oss/javascript/langchain/models#parameters).
 

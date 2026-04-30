@@ -3,9 +3,12 @@ let loadedDocument = null;
 globalThis.loadedDocument = loadedDocument;
 let aiAnalysisResult = null;
 globalThis.aiAnalysisResult = aiAnalysisResult;
-let aiPanel = null;
-globalThis.aiPanel = aiPanel;
-
+let diagnosticsPanel = null;
+globalThis.diagnosticsPanel = diagnosticsPanel;
+let llmModel = '';
+globalThis.llmModel = llmModel;
+let systemPrompt = '';
+globalThis.systemPrompt = systemPrompt;
 
 const files = [
   'https://apryse.s3.us-west-1.amazonaws.com/public/files/samples/sales-invoice-with-credit-cards.pdf',

@@ -20,7 +20,7 @@ class LLMManager {
     try {
       this.llm = new ChatOpenAI({
         apiKey: process.env.OPENAI_API_KEY,
-        modelName: process.env.OPENAI_MODEL,
+        model: process.env.OPENAI_MODEL,
         maxTokens: Number.parseInt(process.env.OPENAI_MAX_TOKENS, 10),
         temperature: Number.parseFloat(process.env.OPENAI_TEMPERATURE)
       });
