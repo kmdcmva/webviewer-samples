@@ -16,10 +16,16 @@
     "start": "parcel public/index.html",
     "copy-webviewer": "node scripts/copy-webviewer-files.cjs"
   },
+  "targets": {
+    "default": {
+      "distDir": ".",
+      "publicUrl": "/"
+    }
+  },
   "multipleStaticFileCopier": [
     {
       "origin": "node_modules/@pdftron/webviewer/public",
-      "destination": "dist/lib"
+      "destination": "lib"
     }
   ],
   "browserslist": [

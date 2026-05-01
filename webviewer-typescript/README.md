@@ -37,9 +37,9 @@ npm install
 npm start
 ```
 
-`npm start` automatically copies the required WebViewer static assets from the npm package into the `dist/lib` folder (Parcel's output directory), then launches the Parcel dev server. Open [http://localhost:1234](http://localhost:1234) in your browser to view the sample.
+`npm start` automatically copies the required WebViewer static assets from the npm package into the `lib` folder at the project root, then launches the Parcel dev server. Open [http://localhost:1234](http://localhost:1234) in your browser to view the sample.
 
-> **Note:** The `dist/` folder is generated at build time and is listed in `.gitignore`. You do not need to commit it. If you ever need to copy the assets manually without starting the dev server, run:
+> **Note:** The `lib/` folder is generated at build time and is listed in `.gitignore`. You do not need to commit it. If you ever need to copy the assets manually without starting the dev server, run:
 >
 > ```shell
 > npm run copy-webviewer
