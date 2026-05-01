@@ -57,7 +57,7 @@ function sendFile(res, baseDir, relativePath, fallbackToIndex) {
 			fs.readFile(indexPath, (indexErr, indexData) => {
 				if (indexErr) {
 					res.writeHead(500, { 'Content-Type': 'text/plain; charset=utf-8' });
-					res.end('Unable to read dist/index.html. Run npm start again.');
+					res.end('dist/index.html not found. Check that the Parcel build completed successfully.');
 					return;
 				}
 				res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
