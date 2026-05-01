@@ -3,5 +3,3 @@ dist/
 .cache/
 .parcel-cache/
 lib/
-index.html
-public.*

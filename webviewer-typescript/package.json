@@ -13,14 +13,8 @@
     "parcel-reporter-multiple-static-file-copier": "^1.0.5"
   },
   "scripts": {
-    "start": "parcel public/index.html",
+    "start": "node scripts/copy-webviewer-files.cjs && parcel build public/index.html --dist-dir dist --public-url / && node server.js",
     "copy-webviewer": "node scripts/copy-webviewer-files.cjs"
-  },
-  "targets": {
-    "default": {
-      "distDir": ".",
-      "publicUrl": "/"
-    }
   },
   "multipleStaticFileCopier": [
     {
