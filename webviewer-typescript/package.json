@@ -7,32 +7,25 @@
     "typescript": "^5.9.3"
   },
   "devDependencies": {
-    "btoa": "^1.2.1",
-    "download": "^8.0.0",
-    "express": "^5.2.1",
+    "@parcel/config-default": "^2.16.3",
     "fs-extra": "^11.3.2",
-    "ip": "^2.0.1",
-    "opn": "^6.0.0",
     "parcel": "2.16.3",
-    "parcel-plugin-static-files-copy": "^2.6.0"
+    "parcel-reporter-multiple-static-file-copier": "^1.0.5"
   },
   "scripts": {
-    "start": "parcel public/index.html",
-    "watch": "tsc --watch"
+    "start": "node scripts/copy-webviewer-files.cjs && parcel build public/index.html --dist-dir dist --public-url / && node server.js",
+    "copy-webviewer": "node scripts/copy-webviewer-files.cjs"
   },
+  "multipleStaticFileCopier": [
+    {
+      "origin": "node_modules/@pdftron/webviewer/public",
+      "destination": "lib"
+    }
+  ],
   "browserslist": [
     ">0.2%",
     "not dead",
     "not ie <= 11",
     "not op_mini all"
-  ],
-  "staticFiles": {
-    "staticPath": [
-      {
-        "staticPath": "node_modules/@pdftron/webviewer/public",
-        "staticOutDir": "lib"
-      }
-    ],
-    "watcherGlob": "**"
-  }
+  ]
 }

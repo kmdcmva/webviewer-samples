@@ -5,16 +5,11 @@
 - [WebViewer Documentation](https://docs.apryse.com/web/guides/get-started)
 - [WebViewer Demo](https://showcase.apryse.com/)
 
-This sample is specifically designed for any users interested in integrating WebViewer into a TypeScript project. WebViewer has a comprehensive definition file ready for use by just adding a reference to the definition file.
+This sample demonstrates how to integrate WebViewer into a **TypeScript** project using [Parcel](https://parceljs.org/) as the bundler. It shows how to write type-safe code against the WebViewer API using the bundled TypeScript definition file, giving you editor auto-complete and compile-time type checking.
 
 ## Get your trial key
 
 A license key is required to run WebViewer. You can obtain a trial key in our [get started guides](https://docs.apryse.com/web/guides/get-started), or by signing-up on our [developer portal](https://dev.apryse.com/).
-
-## Trial
-
-You can obtain the trial key by signing-up on our [developer portal](https://dev.apryse.com/).
-
 
 ## Initial setup
 
@@ -28,7 +23,6 @@ Follow the steps below to set the license key in this sample:
 - Replace 'Insert commercial license key here after purchase' with your license key
 - Save the file
 
-
 ## Install
 
 ```shell
@@ -39,14 +33,26 @@ npm install
 
 ## Run
 
-Setup the TypeScript compiler to watch for changes and recompile the source file:
-
-```shell
-npm run watch
-```
-
-Open a different shell service and run:
-
 ```shell
 npm start
 ```
+
+`npm start` copies the required WebViewer static assets into the `lib/` folder, runs a production Parcel build into `dist/`, then starts a custom Node.js HTTP server at [http://localhost:1234](http://localhost:1234).
+
+The server routes `/lib/` requests directly from `./lib` (with correct MIME types) and all other requests from `./dist`, so WebViewer assets are served with the correct content type.
+
+> **Note:** The `dist/` and `lib/` folders are generated at build time and are listed in `.gitignore`. You do not need to commit them. To copy the WebViewer assets manually without a full build, run:
+>
+> ```shell
+> npm run copy-webviewer
+> ```
+
+### Clearing the Parcel cache
+
+If you see unexpected behaviour after upgrading dependencies, clear the Parcel build cache and restart:
+
+```shell
+rm -rf .parcel-cache
+npm start
+```
+
