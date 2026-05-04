@@ -5,7 +5,7 @@
 - [WebViewer Documentation](https://docs.apryse.com/web/guides/get-started)
 - [WebViewer Demo](https://showcase.apryse.com/)
 
-This sample is designed to show you have to Integrate WebViewer into an Angular project. This project was generated with [Angular CLI](https://github.com/angular/angular-cli) version 15.1.0. [Read more about integrating with Angular](https://docs.apryse.com/web/guides/get-started/angular)
+This sample is designed to show you how to Integrate WebViewer into an Angular project. This project was generated with [Angular CLI](https://github.com/angular/angular-cli) version 21.2.0. [Read more about integrating with Angular](https://docs.apryse.com/web/guides/get-started/angular)
 
 You can [watch a video](https://www.youtube.com/watch?v=OxNjs4dc6zY) that walks you through how to embed Apryse's WebViewer inside of Angular project.
 
